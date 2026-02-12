@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register | Mist & Matter</title>
+<link rel="icon" href="logo3.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+.auth-container{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+.auth-box{background:#fff;border:1px solid var(--border);border-radius:12px;padding:40px;max-width:420px;width:100%;box-shadow:0 4px 12px rgba(0,0,0,.08);}
+.auth-logo{text-align:center;margin-bottom:32px;}
+.auth-logo img{height:48px;margin-bottom:12px;}
+.auth-logo h2{font-family:"Playfair Display",serif;color:var(--gold);font-size:1.8rem;}
+.auth-form input{width:100%;padding:14px;margin-bottom:16px;border:1px solid var(--border);border-radius:8px;font-size:.9rem;transition:border .3s;}
+.auth-form input:focus{outline:none;border-color:var(--gold);}
+.auth-btn{width:100%;padding:14px;background:var(--ink);color:#fff;border:none;border-radius:8px;font-size:.9rem;letter-spacing:.1em;cursor:pointer;transition:all .3s;}
+.auth-btn:hover{background:#000;transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.2);}
+.auth-link{text-align:center;margin-top:20px;font-size:.85rem;color:#666;}
+.auth-link a{color:var(--gold);text-decoration:none;font-weight:500;}
+.auth-link a:hover{text-decoration:underline;}
+.error-msg{color:#e53935;font-size:.8rem;margin-bottom:12px;display:none;}
+</style>
+</head>
+<body>
+<div class="auth-container">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <img src="logo3.png" alt="Mist & Matter">
+      <h2>Create Account</h2>
+    </div>
+    <form class="auth-form" onsubmit="handleRegister(event)">
+      <div class="error-msg" id="errorMsg"></div>
+      <input type="text" id="name" placeholder="Full Name" required>
+      <input type="email" id="email" placeholder="Email Address" required>
+      <input type="tel" id="phone" placeholder="Phone Number" required>
+      <input type="password" id="password" placeholder="Password (min 6 characters)" required minlength="6">
+      <button type="submit" class="auth-btn">REGISTER</button>
+    </form>
+    <div class="auth-link">
+      Already have an account? <a href="login.html">Login</a>
+    </div>
+  </div>
+</div>
+<script>
+async function handleRegister(e){
+  e.preventDefault();
+  const errorMsg=document.getElementById('errorMsg');
+  errorMsg.style.display='none';
+  const data={
+    name:document.getElementById('name').value,
+    email:document.getElementById('email').value,
+    phone:document.getElementById('phone').value,
+    password:document.getElementById('password').value
+  };
+  try{
+    const res=await fetch('https://preprod-mnm-api.mistnmatter.workers.dev/register',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(data)
+    });
+    const result=await res.json();
+    if(res.ok){
+      localStorage.setItem('mm_user',JSON.stringify(result.user));
+      window.location.href='index.html';
+    }else{
+      errorMsg.textContent=result.message||'Registration failed';
+      errorMsg.style.display='block';
+    }
+  }catch(err){
+    errorMsg.textContent='Network error. Please try again.';
+    errorMsg.style.display='block';
+  }
+}
+</script>
+</body>
+</html>

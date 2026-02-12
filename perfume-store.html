@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Luxe Perfumes | Premium Fragrances</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  color: #333;
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+header {
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 20px 0;
+}
+
+header .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-size: 28px;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
+nav {
+  display: flex;
+  gap: 30px;
+}
+
+nav a {
+  text-decoration: none;
+  color: #333;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+nav a:hover {
+  color: #d4af37;
+}
+
+.mobile-menu {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.hero {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  padding: 120px 20px;
+  text-align: center;
+}
+
+.hero-content h1 {
+  font-size: 48px;
+  margin-bottom: 20px;
+}
+
+.hero-content p {
+  font-size: 20px;
+  margin-bottom: 30px;
+  opacity: 0.9;
+}
+
+.btn {
+  display: inline-block;
+  background: #fff;
+  color: #667eea;
+  padding: 15px 40px;
+  text-decoration: none;
+  border-radius: 30px;
+  font-weight: bold;
+  transition: transform 0.3s;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+.products {
+  padding: 80px 20px;
+}
+
+.products h2 {
+  text-align: center;
+  font-size: 36px;
+  margin-bottom: 50px;
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 30px;
+}
+
+.product-card {
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  transition: transform 0.3s;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+}
+
+.product-img {
+  position: relative;
+  overflow: hidden;
+}
+
+.product-img img {
+  width: 100%;
+  height: 350px;
+  object-fit: cover;
+}
+
+.badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #000;
+  color: #fff;
+  padding: 5px 15px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.badge.bestseller {
+  background: #d4af37;
+}
+
+.product-card h3 {
+  padding: 20px 20px 10px;
+  font-size: 22px;
+}
+
+.notes {
+  padding: 0 20px;
+  color: #666;
+  font-size: 14px;
+  font-style: italic;
+}
+
+.price {
+  padding: 10px 20px;
+  font-size: 24px;
+  font-weight: bold;
+  color: #d4af37;
+}
+
+.btn-add {
+  width: calc(100% - 40px);
+  margin: 0 20px 20px;
+  padding: 12px;
+  background: #000;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+.btn-add:hover {
+  background: #333;
+}
+
+.features {
+  background: #f9f9f9;
+  padding: 60px 20px;
+}
+
+.features .container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 30px;
+  text-align: center;
+}
+
+.feature .icon {
+  font-size: 40px;
+  margin-bottom: 15px;
+}
+
+.feature h4 {
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+
+.feature p {
+  color: #666;
+  font-size: 14px;
+}
+
+footer {
+  background: #222;
+  color: #fff;
+  padding: 50px 20px 20px;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 40px;
+  margin-bottom: 30px;
+}
+
+footer h4 {
+  margin-bottom: 15px;
+  color: #d4af37;
+}
+
+footer a {
+  display: block;
+  color: #ccc;
+  text-decoration: none;
+  margin-bottom: 8px;
+  transition: color 0.3s;
+}
+
+footer a:hover {
+  color: #fff;
+}
+
+footer p {
+  color: #ccc;
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+.copyright {
+  text-align: center;
+  padding-top: 20px;
+  border-top: 1px solid #444;
+  font-size: 13px;
+}
+
+.cart-drawer {
+  position: fixed;
+  right: -400px;
+  top: 0;
+  width: 400px;
+  height: 100vh;
+  background: #fff;
+  box-shadow: -2px 0 10px rgba(0,0,0,0.2);
+  transition: right 0.3s;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+}
+
+.cart-drawer.open {
+  right: 0;
+}
+
+.cart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.cart-header button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+#cartItems {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.cart-item {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.cart-item img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+.cart-item-info {
+  flex: 1;
+}
+
+.cart-item-info h4 {
+  margin-bottom: 5px;
+}
+
+.cart-item-price {
+  color: #d4af37;
+  font-weight: bold;
+}
+
+.cart-item-qty {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.cart-item-qty button {
+  width: 25px;
+  height: 25px;
+  border: 1px solid #ddd;
+  background: #fff;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.cart-footer {
+  padding: 20px;
+  border-top: 1px solid #eee;
+}
+
+.cart-total {
+  display: flex;
+  justify-content: space-between;
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.cart-footer .btn {
+  width: 100%;
+  background: #000;
+  color: #fff;
+  padding: 15px;
+  border-radius: 5px;
+}
+
+#overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  z-index: 999;
+}
+
+#overlay.active {
+  display: block;
+}
+
+@media (max-width: 768px) {
+  nav {
+    display: none;
+  }
+  
+  .mobile-menu {
+    display: block;
+  }
+  
+  .hero-content h1 {
+    font-size: 32px;
+  }
+  
+  .cart-drawer {
+    width: 100%;
+    right: -100%;
+  }
+  
+  .product-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+  }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <div class="logo">LUXE</div>
+    <nav>
+      <a href="#shop">SHOP</a>
+      <a href="#bestsellers">BESTSELLERS</a>
+      <a href="#about">ABOUT</a>
+      <a onclick="openCart()">CART (<span id="cartCount">0</span>)</a>
+    </nav>
+    <button class="mobile-menu" onclick="toggleMenu()">☰</button>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-content">
+    <h1>Discover Your Signature Scent</h1>
+    <p>Premium perfumes crafted for the modern individual</p>
+    <a href="#shop" class="btn">SHOP NOW</a>
+  </div>
+</section>
+
+<section id="shop" class="products">
+  <div class="container">
+    <h2>Our Collection</h2>
+    <div class="product-grid">
+      
+      <div class="product-card">
+        <div class="product-img">
+          <img src="https://picsum.photos/300/400?random=1" alt="Velvet Rose">
+          <span class="badge">NEW</span>
+        </div>
+        <h3>Velvet Rose</h3>
+        <p class="notes">Rose · Vanilla · Musk</p>
+        <div class="price">₹1,299</div>
+        <button class="btn-add" onclick="addToCart(1)">ADD TO CART</button>
+      </div>
+
+      <div class="product-card">
+        <div class="product-img">
+          <img src="https://picsum.photos/300/400?random=2" alt="Ocean Breeze">
+          <span class="badge bestseller">BESTSELLER</span>
+        </div>
+        <h3>Ocean Breeze</h3>
+        <p class="notes">Aquatic · Citrus · Amber</p>
+        <div class="price">₹1,499</div>
+        <button class="btn-add" onclick="addToCart(2)">ADD TO CART</button>
+      </div>
+
+      <div class="product-card">
+        <div class="product-img">
+          <img src="https://picsum.photos/300/400?random=3" alt="Midnight Oud">
+        </div>
+        <h3>Midnight Oud</h3>
+        <p class="notes">Oud · Leather · Spice</p>
+        <div class="price">₹1,799</div>
+        <button class="btn-add" onclick="addToCart(3)">ADD TO CART</button>
+      </div>
+
+      <div class="product-card">
+        <div class="product-img">
+          <img src="https://picsum.photos/300/400?random=4" alt="Citrus Bloom">
+        </div>
+        <h3>Citrus Bloom</h3>
+        <p class="notes">Bergamot · Jasmine · Cedar</p>
+        <div class="price">₹1,199</div>
+        <button class="btn-add" onclick="addToCart(4)">ADD TO CART</button>
+      </div>
+
+      <div class="product-card">
+        <div class="product-img">
+          <img src="https://picsum.photos/300/400?random=5" alt="Amber Noir">
+        </div>
+        <h3>Amber Noir</h3>
+        <p class="notes">Amber · Patchouli · Tonka</p>
+        <div class="price">₹1,599</div>
+        <button class="btn-add" onclick="addToCart(5)">ADD TO CART</button>
+      </div>
+
+      <div class="product-card">
+        <div class="product-img">
+          <img src="https://picsum.photos/300/400?random=6" alt="White Musk">
+        </div>
+        <h3>White Musk</h3>
+        <p class="notes">White Musk · Lily · Sandalwood</p>
+        <div class="price">₹1,399</div>
+        <button class="btn-add" onclick="addToCart(6)">ADD TO CART</button>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="features">
+  <div class="container">
+    <div class="feature">
+      <div class="icon">🚚</div>
+      <h4>Free Shipping</h4>
+      <p>On orders above ₹999</p>
+    </div>
+    <div class="feature">
+      <div class="icon">✨</div>
+      <h4>Premium Quality</h4>
+      <p>Long-lasting fragrances</p>
+    </div>
+    <div class="feature">
+      <div class="icon">🔒</div>
+      <h4>Secure Payment</h4>
+      <p>100% safe checkout</p>
+    </div>
+    <div class="feature">
+      <div class="icon">↩️</div>
+      <h4>Easy Returns</h4>
+      <p>7-day return policy</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="footer-content">
+      <div>
+        <h4>LUXE</h4>
+        <p>Premium perfumes for everyone</p>
+      </div>
+      <div>
+        <h4>Quick Links</h4>
+        <a href="#shop">Shop</a>
+        <a href="#about">About Us</a>
+        <a href="#contact">Contact</a>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <p>Email: hello@luxeperfumes.com</p>
+        <p>Phone: +91 98765 43210</p>
+      </div>
+    </div>
+    <p class="copyright">© 2024 Luxe Perfumes. All rights reserved.</p>
+  </div>
+</footer>
+
+<div id="cartDrawer" class="cart-drawer">
+  <div class="cart-header">
+    <h3>Shopping Cart</h3>
+    <button onclick="closeCart()">✕</button>
+  </div>
+  <div id="cartItems"></div>
+  <div class="cart-footer">
+    <div class="cart-total">
+      <span>Total:</span>
+      <span id="cartTotal">₹0</span>
+    </div>
+    <button class="btn" onclick="checkout()">CHECKOUT</button>
+  </div>
+</div>
+
+<div id="overlay" onclick="closeCart()"></div>
+
+<script>
+const products = {
+  1: { name: "Velvet Rose", price: 1299, img: "https://picsum.photos/300/400?random=1" },
+  2: { name: "Ocean Breeze", price: 1499, img: "https://picsum.photos/300/400?random=2" },
+  3: { name: "Midnight Oud", price: 1799, img: "https://picsum.photos/300/400?random=3" },
+  4: { name: "Citrus Bloom", price: 1199, img: "https://picsum.photos/300/400?random=4" },
+  5: { name: "Amber Noir", price: 1599, img: "https://picsum.photos/300/400?random=5" },
+  6: { name: "White Musk", price: 1399, img: "https://picsum.photos/300/400?random=6" }
+};
+
+let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+function updateCartCount() {
+  const count = cart.reduce((sum, item) => sum + item.qty, 0);
+  document.getElementById('cartCount').textContent = count;
+}
+
+function addToCart(id) {
+  const product = products[id];
+  const existing = cart.find(item => item.id === id);
+  
+  if (existing) {
+    existing.qty++;
+  } else {
+    cart.push({ id, ...product, qty: 1 });
+  }
+  
+  localStorage.setItem('cart', JSON.stringify(cart));
+  updateCartCount();
+  showNotification('Added to cart!');
+}
+
+function removeFromCart(id) {
+  cart = cart.filter(item => item.id !== id);
+  localStorage.setItem('cart', JSON.stringify(cart));
+  updateCartCount();
+  renderCart();
+}
+
+function updateQty(id, change) {
+  const item = cart.find(item => item.id === id);
+  if (item) {
+    item.qty += change;
+    if (item.qty <= 0) {
+      removeFromCart(id);
+    } else {
+      localStorage.setItem('cart', JSON.stringify(cart));
+      renderCart();
+    }
+  }
+}
+
+function renderCart() {
+  const cartItems = document.getElementById('cartItems');
+  
+  if (cart.length === 0) {
+    cartItems.innerHTML = '<p style="text-align:center;color:#999;padding:40px 0;">Your cart is empty</p>';
+    document.getElementById('cartTotal').textContent = '₹0';
+    return;
+  }
+  
+  let html = '';
+  let total = 0;
+  
+  cart.forEach(item => {
+    total += item.price * item.qty;
+    html += `
+      <div class="cart-item">
+        <img src="${item.img}" alt="${item.name}">
+        <div class="cart-item-info">
+          <h4>${item.name}</h4>
+          <div class="cart-item-price">₹${item.price}</div>
+          <div class="cart-item-qty">
+            <button onclick="updateQty(${item.id}, -1)">-</button>
+            <span>${item.qty}</span>
+            <button onclick="updateQty(${item.id}, 1)">+</button>
+            <button onclick="removeFromCart(${item.id})" style="margin-left:auto;color:#f44336;border:none;background:none;cursor:pointer;">Remove</button>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+  
+  cartItems.innerHTML = html;
+  document.getElementById('cartTotal').textContent = '₹' + total;
+}
+
+function openCart() {
+  document.getElementById('cartDrawer').classList.add('open');
+  document.getElementById('overlay').classList.add('active');
+  renderCart();
+}
+
+function closeCart() {
+  document.getElementById('cartDrawer').classList.remove('open');
+  document.getElementById('overlay').classList.remove('active');
+}
+
+function checkout() {
+  if (cart.length === 0) {
+    alert('Your cart is empty!');
+    return;
+  }
+  alert('Proceeding to checkout...\nTotal: ₹' + cart.reduce((sum, item) => sum + item.price * item.qty, 0));
+}
+
+function showNotification(msg) {
+  const div = document.createElement('div');
+  div.textContent = msg;
+  div.style.cssText = 'position:fixed;top:80px;right:20px;background:#000;color:#fff;padding:15px 25px;border-radius:5px;z-index:9999;animation:slideIn 0.3s;';
+  document.body.appendChild(div);
+  setTimeout(() => div.remove(), 2000);
+}
+
+function toggleMenu() {
+  const nav = document.querySelector('nav');
+  nav.style.display = nav.style.display === 'flex' ? 'none' : 'flex';
+}
+
+updateCartCount();
+</script>
+</body>
+</html>

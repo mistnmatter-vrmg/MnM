@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin-fixed.html
+Disallow: /checkout-*.html
+Disallow: /smart-checkout.html
+
+Sitemap: https://mnm-website.pages.dev/sitemap.xml

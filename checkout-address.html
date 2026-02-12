@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery Address - Mist & Matter</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+.address-container { max-width: 600px; margin: 40px auto; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+.address-container h2 { margin-bottom: 10px; color: #111; }
+.address-container p { color: #666; margin-bottom: 30px; font-size: 14px; }
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: #333; }
+.form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; font-family: inherit; }
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline: none; border-color: #667eea; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+.btn { width: 100%; padding: 14px; background: #667eea; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+.btn:hover { background: #5568d3; }
+.back-link { text-align: center; margin-top: 20px; }
+.back-link a { color: #667eea; text-decoration: none; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div class="address-container">
+  <h2>📍 Delivery Address</h2>
+  <p>Where should we deliver your order?</p>
+  
+  <form onsubmit="saveAddress(event)">
+    <div class="form-group">
+      <label>Full Name *</label>
+      <input type="text" id="fullName" placeholder="Enter your full name" required>
+    </div>
+    
+    <div class="form-group">
+      <label>Phone Number *</label>
+      <input type="tel" id="phone" maxlength="10" placeholder="10 digit mobile number" pattern="[0-9]{10}" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'')" required>
+    </div>
+    
+    <div class="form-group">
+      <label>Pincode *</label>
+      <input type="text" id="pincode" maxlength="6" placeholder="6 digit pincode" pattern="[0-9]{6}" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'')" required>
+    </div>
+    
+    <div class="form-group">
+      <label>Address (House No, Building, Street) *</label>
+      <textarea id="address" rows="3" placeholder="Enter your complete address" required></textarea>
+    </div>
+    
+    <div class="form-row">
+      <div class="form-group">
+        <label>City *</label>
+        <input type="text" id="city" placeholder="City" required>
+      </div>
+      <div class="form-group">
+        <label>State *</label>
+        <select id="state" required>
+          <option value="">Select State</option>
+          <option value="Maharashtra">Maharashtra</option>
+          <option value="Delhi">Delhi</option>
+          <option value="Karnataka">Karnataka</option>
+          <option value="Tamil Nadu">Tamil Nadu</option>
+          <option value="Gujarat">Gujarat</option>
+          <option value="Rajasthan">Rajasthan</option>
+          <option value="Uttar Pradesh">Uttar Pradesh</option>
+          <option value="West Bengal">West Bengal</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label>Landmark (Optional)</label>
+      <input type="text" id="landmark" placeholder="Nearby landmark">
+    </div>
+    
+    <button type="submit" class="btn">SAVE & CONTINUE</button>
+  </form>
+  
+  <div class="back-link">
+    <a href="index.html">← Back to Shopping</a>
+  </div>
+</div>
+
+<script>
+const API_URL = 'https://mnm-orders-api.mistnmatter.workers.dev';
+
+// Check if user is logged in
+if (!localStorage.getItem('mm_user_logged_in')) {
+  window.location.href = 'checkout-login.html';
+}
+
+// Pre-fill user details
+const userName = localStorage.getItem('mm_user_name');
+const userPhone = localStorage.getItem('mm_user_phone');
+const savedAddress = JSON.parse(localStorage.getItem('mm_delivery_address') || '{}');
+const editAddressId = localStorage.getItem('edit_address_id');
+
+// If editing, load address from database
+if (editAddressId) {
+  loadAddressForEdit(editAddressId);
+} else {
+  // New address - only pre-fill name and phone
+  if (userName) {
+    document.getElementById('fullName').value = userName;
+  }
+  if (userPhone) {
+    document.getElementById('phone').value = userPhone;
+    document.getElementById('phone').readOnly = true;
+  }
+}
+
+async function loadAddressForEdit(addressId) {
+  try {
+    const response = await fetch(`${API_URL}/api/users/${userPhone}`);
+    const result = await response.json();
+    
+    if (result.success && result.addresses) {
+      const addr = result.addresses.find(a => a.id == addressId);
+      if (addr) {
+        document.getElementById('fullName').value = addr.full_name;
+        document.getElementById('phone').value = addr.phone;
+        document.getElementById('pincode').value = addr.pincode;
+        document.getElementById('address').value = addr.address;
+        document.getElementById('city').value = addr.city;
+        document.getElementById('state').value = addr.state;
+        if (addr.landmark) document.getElementById('landmark').value = addr.landmark;
+      }
+    }
+  } catch (error) {
+    console.error('Load address error:', error);
+  }
+}
+
+async function saveAddress(event) {
+  event.preventDefault();
+  
+  const addressData = {
+    fullName: document.getElementById('fullName').value.trim(),
+    phone: document.getElementById('phone').value.trim(),
+    pincode: document.getElementById('pincode').value.trim(),
+    address: document.getElementById('address').value.trim(),
+    city: document.getElementById('city').value.trim(),
+    state: document.getElementById('state').value,
+    landmark: document.getElementById('landmark').value.trim(),
+    userPhone: userPhone
+  };
+  
+  // Validate
+  if (addressData.phone.length !== 10) {
+    alert('⚠️ Please enter valid 10 digit phone number!');
+    return;
+  }
+  
+  if (addressData.pincode.length !== 6) {
+    alert('⚠️ Please enter valid 6 digit pincode!');
+    return;
+  }
+  
+  // Save address locally first
+  localStorage.setItem('mm_delivery_address', JSON.stringify(addressData));
+  
+  // Check if editing existing address
+  const editAddressId = localStorage.getItem('edit_address_id');
+  
+  if (editAddressId) {
+    // Update existing address
+    try {
+      await fetch(`${API_URL}/api/users/address/${editAddressId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(addressData)
+      });
+      
+      localStorage.removeItem('edit_address_id');
+      alert('✅ Address updated successfully!');
+      
+      // Redirect back to saved addresses in profile
+      window.location.href = 'index.html#profile-addresses';
+    } catch (error) {
+      console.error('Address update error:', error);
+      alert('❌ Error updating address');
+    }
+  } else {
+    // Create new address
+    try {
+      await fetch(`${API_URL}/api/users/address`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(addressData)
+      });
+    } catch (error) {
+      console.error('Address save error:', error);
+    }
+    
+    // Check if coming from checkout flow
+    const checkoutData = localStorage.getItem('checkout_data');
+    
+    if (checkoutData) {
+      // Coming from checkout - go to payment
+      window.location.href = 'smart-checkout.html';
+    } else {
+      // Coming from profile - show success and go back
+      alert('✅ Address saved successfully!');
+      window.location.href = 'index.html#profile-addresses';
+    }
+  }
+}
+</script>
+
+</body>
+</html>

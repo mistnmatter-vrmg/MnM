@@ -1,0 +1,12 @@
+name = "mnm-orders-api"
+main = "api-enhanced.js"
+compatibility_date = "2024-01-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "mnm-orders-db"
+database_id = "56828733-0221-405d-89a0-1069bb0de54b"
+
+[vars]
+ADMIN_PHONE = "9834690921"
+CFO_PHONE = "9096063159"

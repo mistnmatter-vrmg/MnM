@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login - Mist & Matter</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+.login-container { max-width: 400px; margin: 80px auto; background: white; padding: 40px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+.login-container h2 { text-align: center; margin-bottom: 10px; color: #111; }
+.login-container p { text-align: center; color: #666; margin-bottom: 30px; font-size: 14px; }
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: #333; }
+.form-group input { width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; }
+.form-group input:focus { outline: none; border-color: #667eea; }
+.btn { width: 100%; padding: 14px; background: #667eea; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; }
+.btn:hover { background: #5568d3; }
+.btn:disabled { background: #ccc; cursor: not-allowed; }
+.otp-section { display: none; }
+.resend { text-align: center; margin-top: 15px; font-size: 14px; color: #666; }
+.resend a { color: #667eea; cursor: pointer; text-decoration: none; }
+.back-link { text-align: center; margin-top: 20px; }
+.back-link a { color: #667eea; text-decoration: none; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div class="login-container">
+  <h2>🌸 Mist & Matter</h2>
+  <p>Login to your account</p>
+  
+  <!-- Phone Number Section -->
+  <div id="phoneSection">
+    <div class="form-group">
+      <label>Full Name</label>
+      <input type="text" id="nameInput" placeholder="Enter your full name">
+    </div>
+    <div class="form-group">
+      <label>Mobile Number</label>
+      <input type="tel" id="phoneInput" placeholder="Enter 10 digit mobile number" maxlength="10">
+    </div>
+    <div class="form-group">
+      <label>Email (Optional)</label>
+      <input type="email" id="emailInput" placeholder="Enter your email">
+    </div>
+    <button class="btn" onclick="sendOTP()">SEND OTP</button>
+  </div>
+  
+  <!-- OTP Section -->
+  <div id="otpSection" class="otp-section">
+    <div class="form-group">
+      <label>Enter OTP</label>
+      <input type="text" id="otpInput" placeholder="Enter 6 digit OTP" maxlength="6">
+      <p style="font-size: 12px; color: #666; margin-top: 8px;">OTP sent to <strong id="sentPhone"></strong></p>
+    </div>
+    <button class="btn" onclick="verifyOTP()">VERIFY & CONTINUE</button>
+    <div class="resend">
+      Didn't receive? <a onclick="sendOTP()">Resend OTP</a>
+    </div>
+  </div>
+  
+  <div class="back-link">
+    <a href="index.html">← Back to Shopping</a>
+  </div>
+</div>
+
+<script>
+const API_URL = 'https://mnm-orders-api.mistnmatter.workers.dev';
+let generatedOTP = '';
+let userPhone = '';
+let userName = '';
+let userEmail = '';
+
+function sendOTP() {
+  const name = document.getElementById('nameInput').value.trim();
+  const phone = document.getElementById('phoneInput').value.trim();
+  const email = document.getElementById('emailInput').value.trim();
+  
+  if (!name) {
+    showToast('⚠️ Please enter your name!');
+    return;
+  }
+  
+  if (!phone || phone.length !== 10 || !/^[0-9]{10}$/.test(phone)) {
+    showToast('⚠️ Please enter valid 10 digit mobile number!');
+    return;
+  }
+  
+  generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+  userPhone = phone;
+  userName = name;
+  userEmail = email;
+  
+  console.log('🔐 OTP:', generatedOTP);
+  showToast(`📱 OTP sent to ${phone}\n\nFor testing: ${generatedOTP}`);
+  
+  document.getElementById('phoneSection').style.display = 'none';
+  document.getElementById('otpSection').style.display = 'block';
+  document.getElementById('sentPhone').textContent = phone;
+}
+
+async function verifyOTP() {
+  const enteredOTP = document.getElementById('otpInput').value.trim();
+  
+  if (!enteredOTP || enteredOTP.length !== 6) {
+    showToast('⚠️ Please enter 6 digit OTP!');
+    return;
+  }
+  
+  if (enteredOTP === generatedOTP) {
+    try {
+      // Use simple user login API (not JWT auth)
+      const response = await fetch(`${API_URL}/api/users/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: userName,
+          phone: userPhone,
+          email: userEmail
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        // Save user data
+        localStorage.setItem('mm_user_name', userName);
+        localStorage.setItem('mm_user_phone', userPhone);
+        localStorage.setItem('mm_user_email', userEmail || '');
+        localStorage.setItem('mm_user_logged_in', 'true');
+        localStorage.setItem('mm_user_id', result.user.id);
+        
+        showToast('✅ Login successful!');
+        
+        // Check if coming from checkout flow
+        const hasCheckoutData = localStorage.getItem('checkout_data');
+        
+        setTimeout(() => {
+          if (hasCheckoutData) {
+            // Checkout flow - go to address page
+            const hasAddress = localStorage.getItem('mm_delivery_address');
+            if (hasAddress) {
+              window.location.href = 'smart-checkout.html';
+            } else {
+              window.location.href = 'checkout-address.html';
+            }
+          } else {
+            // Normal login - go to homepage
+            window.location.href = 'index.html';
+          }
+        }, 500);
+      } else {
+        showToast('❌ Login failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      // Fallback - save locally
+      localStorage.setItem('mm_user_name', userName);
+      localStorage.setItem('mm_user_phone', userPhone);
+      localStorage.setItem('mm_user_email', userEmail || '');
+      localStorage.setItem('mm_user_logged_in', 'true');
+      showToast('✅ Login successful!');
+      
+      // Check if coming from checkout flow
+      const hasCheckoutData = localStorage.getItem('checkout_data');
+      
+      setTimeout(() => {
+        if (hasCheckoutData) {
+          // Checkout flow - go to address page
+          const hasAddress = localStorage.getItem('mm_delivery_address');
+          if (hasAddress) {
+            window.location.href = 'smart-checkout.html';
+          } else {
+            window.location.href = 'checkout-address.html';
+          }
+        } else {
+          // Normal login - go to homepage
+          window.location.href = 'index.html';
+        }
+      }, 500);
+    }
+  } else {
+    showToast('❌ Invalid OTP!');
+    document.getElementById('otpInput').value = '';
+  }
+}
+
+function showToast(msg) {
+  const div = document.createElement('div');
+  div.innerText = msg;
+  div.style.cssText = `
+    position:fixed;
+    bottom:30px;
+    left:50%;
+    transform:translateX(-50%);
+    background:#111;
+    color:#fff;
+    padding:12px 20px;
+    font-size:14px;
+    border-radius:8px;
+    z-index:10000;
+    max-width:90%;
+    text-align:center;
+    box-shadow:0 4px 12px rgba(0,0,0,0.3);
+  `;
+  document.body.appendChild(div);
+  setTimeout(() => div.remove(), 3000);
+}
+</script>
+
+</body>
+</html>

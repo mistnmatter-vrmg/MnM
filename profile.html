@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profile | Mist & Matter</title>
+<link rel="icon" href="logo3.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+.profile-container{min-height:100vh;padding:80px 24px;}
+.profile-box{background:#fff;border:1px solid var(--border);border-radius:12px;padding:40px;max-width:600px;margin:auto;box-shadow:0 4px 12px rgba(0,0,0,.08);}
+.profile-header{text-align:center;margin-bottom:32px;padding-bottom:24px;border-bottom:1px solid var(--border);}
+.profile-header h2{font-family:"Playfair Display",serif;color:var(--gold);font-size:1.8rem;margin-bottom:8px;}
+.profile-form input{width:100%;padding:14px;margin-bottom:16px;border:1px solid var(--border);border-radius:8px;font-size:.9rem;transition:border .3s;}
+.profile-form input:focus{outline:none;border-color:var(--gold);}
+.btn-group{display:flex;gap:12px;margin-top:24px;}
+.btn-group button{flex:1;padding:14px;border:none;border-radius:8px;font-size:.9rem;letter-spacing:.1em;cursor:pointer;transition:all .3s;}
+.btn-primary{background:var(--ink);color:#fff;}
+.btn-primary:hover{background:#000;transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.2);}
+.btn-secondary{background:#fff;color:var(--ink);border:1px solid var(--ink);}
+.btn-secondary:hover{background:var(--light);}
+.btn-logout{background:#e53935;color:#fff;}
+.btn-logout:hover{background:#c62828;}
+.error-msg,.success-msg{font-size:.8rem;margin-bottom:12px;padding:10px;border-radius:6px;display:none;}
+.error-msg{color:#e53935;background:#ffebee;}
+.success-msg{color:#2e7d32;background:#e8f5e9;}
+.back-link{text-align:center;margin-top:20px;}
+.back-link a{color:var(--gold);text-decoration:none;font-size:.85rem;}
+.back-link a:hover{text-decoration:underline;}
+</style>
+</head>
+<body>
+<div class="profile-container">
+  <div class="profile-box">
+    <div class="profile-header">
+      <h2>My Profile</h2>
+      <p style="font-size:.85rem;color:#666;">Manage your account information</p>
+    </div>
+    <div class="error-msg" id="errorMsg"></div>
+    <div class="success-msg" id="successMsg"></div>
+    <form class="profile-form" onsubmit="handleUpdate(event)">
+      <input type="text" id="name" placeholder="Full Name" required>
+      <input type="email" id="email" placeholder="Email Address" required>
+      <input type="tel" id="phone" placeholder="Phone Number" required>
+      <input type="password" id="password" placeholder="New Password (leave blank to keep current)" minlength="6">
+      <div class="btn-group">
+        <button type="submit" class="btn-primary">UPDATE</button>
+        <button type="button" class="btn-logout" onclick="handleLogout()">LOGOUT</button>
+      </div>
+    </form>
+    <div class="back-link">
+      <a href="index.html">← Back to Home</a>
+    </div>
+  </div>
+</div>
+<script>
+const user=JSON.parse(localStorage.getItem('mm_user')||'{}');
+if(!user.id){
+  window.location.href='login.html';
+}
+
+document.getElementById('name').value=user.name||'';
+document.getElementById('email').value=user.email||'';
+document.getElementById('phone').value=user.phone||'';
+
+async function handleUpdate(e){
+  e.preventDefault();
+  const errorMsg=document.getElementById('errorMsg');
+  const successMsg=document.getElementById('successMsg');
+  errorMsg.style.display='none';
+  successMsg.style.display='none';
+  
+  const data={
+    name:document.getElementById('name').value,
+    email:document.getElementById('email').value,
+    phone:document.getElementById('phone').value
+  };
+  const password=document.getElementById('password').value;
+  if(password)data.password=password;
+  
+  try{
+    const res=await fetch(`https://preprod-mnm-api.mistnmatter.workers.dev/users/${user.id}`,{
+      method:'PATCH',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(data)
+    });
+    const result=await res.json();
+    if(res.ok){
+      localStorage.setItem('mm_user',JSON.stringify(result.user));
+      successMsg.textContent='Profile updated successfully!';
+      successMsg.style.display='block';
+      document.getElementById('password').value='';
+    }else{
+      errorMsg.textContent=result.message||'Update failed';
+      errorMsg.style.display='block';
+    }
+  }catch(err){
+    errorMsg.textContent='Network error. Please try again.';
+    errorMsg.style.display='block';
+  }
+}
+
+function handleLogout(){
+  localStorage.removeItem('mm_user');
+  window.location.href='login.html';
+}
+</script>
+</body>
+</html>

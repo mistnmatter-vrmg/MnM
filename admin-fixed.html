@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel - Mist & Matter</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', sans-serif; background: #f5f7fa; }
+.header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 20px; position: relative; }
+.header h1 { font-size: 18px; }
+.header .welcome { font-size: 12px; margin-top: 5px; opacity: 0.9; }
+.logout { position: absolute; top: 15px; right: 20px; background: rgba(255,255,255,0.2); color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-weight: 600; font-size: 12px; }
+.container { max-width: 1400px; margin: 0 auto; padding: 15px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 15px; }
+.stat { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.stat h3 { font-size: 11px; color: #666; margin-bottom: 5px; text-transform: uppercase; }
+.stat .val { font-size: 24px; font-weight: bold; color: #667eea; }
+.tabs { display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; overflow-x: auto; }
+.tab { padding: 8px 15px; background: white; border: 2px solid #e5e7eb; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.tab.active { background: #667eea; color: white; border-color: #667eea; }
+.content { background: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); min-height: 400px; }
+.order { border: 2px solid #e5e7eb; border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+.order.pending { border-left: 4px solid #fbbf24; }
+.order.verified { border-left: 4px solid #10b981; }
+.order.rejected { border-left: 4px solid #ef4444; }
+.order-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 5px; }
+.order-id { font-weight: bold; font-size: 14px; }
+.badge { padding: 3px 10px; border-radius: 15px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+.badge.pending { background: #fef3c7; color: #92400e; }
+.badge.verified { background: #d1fae5; color: #065f46; }
+.badge.rejected { background: #fee2e2; color: #991b1b; }
+.order-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin-bottom: 8px; font-size: 12px; word-break: break-word; }
+.info-item strong { display: block; color: #666; font-size: 10px; margin-bottom: 2px; text-transform: uppercase; }
+.items-box { background: #f9fafb; padding: 8px; border-radius: 5px; margin: 8px 0; font-size: 12px; }
+.screenshot { max-width: 60px; max-height: 60px; border-radius: 5px; cursor: pointer; border: 2px solid #e5e7eb; }
+.btns { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.btn { padding: 6px 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; font-size: 11px; }
+.btn-green { background: #10b981; color: white; }
+.btn-red { background: #ef4444; color: white; }
+.btn-blue { background: #667eea; color: white; }
+.btn-wa { background: #25d366; color: white; }
+.stock-item { border: 2px solid #e5e7eb; border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+.stock-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
+.stock-name { font-weight: bold; font-size: 14px; }
+.stock-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center; margin-bottom: 8px; }
+.stock-grid div strong { display: block; font-size: 20px; color: #667eea; }
+.stock-grid div span { font-size: 10px; color: #666; }
+.stock-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.stock-input { padding: 6px; border: 2px solid #e5e7eb; border-radius: 5px; width: 70px; font-size: 13px; }
+.log-item { border-left: 3px solid #667eea; background: #f9fafb; padding: 12px; margin-bottom: 10px; border-radius: 5px; }
+.log-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 5px; }
+.log-admin { font-weight: bold; color: #667eea; font-size: 13px; }
+.log-time { font-size: 11px; color: #999; }
+.log-details { font-size: 12px; color: #666; line-height: 1.6; }
+.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+.modal img { max-width: 90%; max-height: 90%; border-radius: 10px; }
+.modal-close { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer; }
+@media (max-width: 768px) {
+  .header h1 { font-size: 16px; }
+  .logout { font-size: 11px; padding: 5px 10px; }
+  .stat .val { font-size: 20px; }
+  .order-id { font-size: 13px; }
+  .tabs { gap: 5px; }
+  .tab { padding: 6px 12px; font-size: 12px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🌸 Mist & Matter - Admin Panel</h1>
+  <div class="welcome" id="welcomeMsg"></div>
+  <button class="logout" onclick="logout()">LOGOUT</button>
+</div>
+
+<div class="container">
+  <div class="stats">
+    <div class="stat">
+      <h3>Pending</h3>
+      <div class="val" id="pendingCount">0</div>
+    </div>
+    <div class="stat">
+      <h3>Verified Today</h3>
+      <div class="val" id="verifiedCount">0</div>
+    </div>
+    <div class="stat">
+      <h3>Revenue</h3>
+      <div class="val">₹<span id="totalRevenue">0</span></div>
+    </div>
+    <div class="stat">
+      <h3>Stock</h3>
+      <div class="val" id="totalStock">0</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('all')">All</button>
+    <button class="tab" onclick="switchTab('pending')">Pending</button>
+    <button class="tab" onclick="switchTab('verified')">Verified</button>
+    <button class="tab" onclick="switchTab('rejected')">Rejected</button>
+    <button class="tab" onclick="switchTab('logs')">📋 Logs</button>
+    <button class="tab" onclick="switchTab('stock')">📦 Stock</button>
+  </div>
+
+  <div class="content" id="content"></div>
+</div>
+
+<div class="modal" id="modal" onclick="closeModal()">
+  <span class="modal-close">&times;</span>
+  <img id="modalImg" src="">
+</div>
+
+<script>
+if (!localStorage.getItem('admin_access')) {
+  alert('❌ Unauthorized');
+  window.location.href = 'index.html';
+}
+
+const adminName = localStorage.getItem('admin_name');
+const adminRole = localStorage.getItem('admin_role');
+if (adminName && adminRole) {
+  document.getElementById('welcomeMsg').textContent = `Welcome, ${adminName} (${adminRole})`;
+}
+
+const API = 'https://mnm-orders-api.mistnmatter.workers.dev';
+let currentTab = 'all';
+let orders = [];
+let stock = {};
+let logs = JSON.parse(localStorage.getItem('admin_logs') || '[]');
+
+function toIST(utcTime) {
+  if (!utcTime) return 'N/A';
+  const date = new Date(utcTime);
+  return date.toLocaleString('en-IN', {timeZone: 'Asia/Kolkata', hour12: true});
+}
+
+async function loadOrders() {
+  try {
+    const res = await fetch(`${API}/api/orders`);
+    const data = await res.json();
+    console.log('Orders API response:', data);
+    orders = data.success ? data.orders : [];
+  } catch (e) {
+    console.error('Load orders error:', e);
+    orders = [];
+  }
+}
+
+async function loadStock() {
+  try {
+    const res = await fetch(`${API}/api/stock`);
+    const data = await res.json();
+    console.log('Stock API response:', data);
+    stock = data.success ? data.stock : {};
+  } catch (e) {
+    console.error('Load stock error:', e);
+    stock = {};
+  }
+}
+
+async function init() {
+  await loadOrders();
+  await loadStock();
+  updateStats();
+  renderContent();
+}
+
+function updateStats() {
+  document.getElementById('pendingCount').textContent = orders.filter(o => o.status === 'pending').length;
+  
+  const today = new Date().toDateString();
+  document.getElementById('verifiedCount').textContent = orders.filter(o => 
+    o.status === 'verified' && new Date(o.verified_at || o.created_at).toDateString() === today
+  ).length;
+  
+  document.getElementById('totalRevenue').textContent = orders.filter(o => o.status === 'verified')
+    .reduce((sum, o) => sum + o.total, 0);
+  
+  document.getElementById('totalStock').textContent = Object.values(stock)
+    .reduce((sum, s) => sum + s.available, 0);
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  renderContent();
+}
+
+function renderContent() {
+  const content = document.getElementById('content');
+  
+  if (currentTab === 'stock') {
+    renderStock();
+    return;
+  }
+  
+  if (currentTab === 'logs') {
+    renderLogs();
+    return;
+  }
+  
+  let filtered = orders;
+  if (currentTab === 'pending') filtered = orders.filter(o => o.status === 'pending');
+  if (currentTab === 'verified') filtered = orders.filter(o => o.status === 'verified');
+  if (currentTab === 'rejected') filtered = orders.filter(o => o.status === 'rejected');
+  
+  if (filtered.length === 0) {
+    content.innerHTML = '<p style="text-align:center;color:#999;padding:40px;">No orders found</p>';
+    return;
+  }
+  
+  content.innerHTML = '';
+  filtered.forEach(o => {
+    const orderDiv = document.createElement('div');
+    orderDiv.className = `order ${o.status}`;
+    
+    let itemsHtml = '';
+    if (o.items && o.items.length > 0) {
+      itemsHtml = `<div class="items-box"><strong>Items:</strong> ${o.items.map(i => `${i.product_name} x${i.quantity}`).join(', ')}</div>`;
+    }
+    
+    let addressHtml = '';
+    if (o.address) {
+      addressHtml = `<div class="items-box"><strong>Address:</strong> ${o.address.full_name}, ${o.address.address}, ${o.address.city}, ${o.address.state} - ${o.address.pincode}</div>`;
+    }
+    
+    let screenshotHtml = '';
+    if (o.screenshot_url) {
+      screenshotHtml = `<div class="info-item"><strong>Screenshot</strong><br><img src="${o.screenshot_url}" class="screenshot" data-src="${o.screenshot_url}"></div>`;
+    }
+    
+    let verifiedInfo = '';
+    if (o.status === 'verified' && o.verified_by) {
+      verifiedInfo = `<div class="items-box" style="background:#d1fae5;color:#065f46;">✅ Verified by ${o.verified_by} at ${toIST(o.verified_at)}</div>`;
+    }
+    
+    let rejectedInfo = '';
+    if (o.status === 'rejected' && o.rejected_reason) {
+      rejectedInfo = `<div class="items-box" style="background:#fee2e2;color:#991b1b;">❌ Rejected: ${o.rejected_reason}</div>`;
+    }
+    
+    orderDiv.innerHTML = `
+      <div class="order-top">
+        <div class="order-id">#${o.id}</div>
+        <span class="badge ${o.status}">${o.status}</span>
+      </div>
+      <div class="order-info">
+        <div class="info-item"><strong>Customer</strong>${o.customer_name || 'N/A'}</div>
+        <div class="info-item"><strong>Phone</strong>${o.phone}</div>
+        <div class="info-item"><strong>Amount</strong>₹${o.total}</div>
+        <div class="info-item"><strong>Date</strong>${toIST(o.created_at)}</div>
+        ${screenshotHtml}
+      </div>
+      ${itemsHtml}
+      ${addressHtml}
+      ${verifiedInfo}
+      ${rejectedInfo}
+      <div class="btns"></div>
+    `;
+    
+    const btnsDiv = orderDiv.querySelector('.btns');
+    
+    if (o.status === 'pending') {
+      const verifyBtn = document.createElement('button');
+      verifyBtn.className = 'btn btn-green';
+      verifyBtn.textContent = '✓ Verify';
+      verifyBtn.onclick = () => verifyOrder(o.id);
+      btnsDiv.appendChild(verifyBtn);
+    }
+    
+    if (o.status === 'rejected') {
+      const reverifyBtn = document.createElement('button');
+      reverifyBtn.className = 'btn btn-green';
+      reverifyBtn.textContent = '↻ Re-verify';
+      reverifyBtn.onclick = () => verifyOrder(o.id);
+      btnsDiv.appendChild(reverifyBtn);
+    }
+    
+    if (o.status !== 'rejected') {
+      const rejectBtn = document.createElement('button');
+      rejectBtn.className = 'btn btn-red';
+      rejectBtn.textContent = '✕ Reject';
+      rejectBtn.onclick = () => rejectOrder(o.id);
+      btnsDiv.appendChild(rejectBtn);
+    }
+    
+    const customerBtn = document.createElement('button');
+    customerBtn.className = 'btn btn-wa';
+    customerBtn.textContent = '💬 Customer';
+    customerBtn.onclick = () => msgCustomer(o.phone, o.id, o.status);
+    btnsDiv.appendChild(customerBtn);
+    
+    if (o.status === 'pending') {
+      const alertBtn = document.createElement('button');
+      alertBtn.className = 'btn btn-blue';
+      alertBtn.textContent = '📢 Alert';
+      alertBtn.onclick = () => notifyAdmin(o.id, o.phone, o.total);
+      btnsDiv.appendChild(alertBtn);
+    }
+    
+    const screenshot = orderDiv.querySelector('.screenshot');
+    if (screenshot) {
+      screenshot.onclick = () => openModal(screenshot.dataset.src);
+    }
+    
+    content.appendChild(orderDiv);
+  });
+}
+
+function renderStock() {
+  const content = document.getElementById('content');
+  
+  if (Object.keys(stock).length === 0) {
+    content.innerHTML = '<p style="text-align:center;color:#999;padding:40px;">No stock data</p>';
+    return;
+  }
+  
+  content.innerHTML = '';
+  Object.keys(stock).forEach(name => {
+    const s = stock[name];
+    const status = s.available > 20 ? '✅ Good' : s.available > 10 ? '⚠️ Low' : '🔴 Critical';
+    const inputId = `qty_${name.replace(/\s/g,'_')}`;
+    
+    const stockDiv = document.createElement('div');
+    stockDiv.className = 'stock-item';
+    stockDiv.innerHTML = `
+      <div class="stock-top">
+        <div class="stock-name">${name}</div>
+        <div>${status}</div>
+      </div>
+      <div class="stock-grid">
+        <div><strong>${s.available}</strong><span>Available</span></div>
+        <div><strong>${s.reserved}</strong><span>Reserved</span></div>
+        <div><strong>${s.available + s.reserved}</strong><span>Total</span></div>
+      </div>
+      <div class="stock-actions">
+        <input type="number" class="stock-input" id="${inputId}" value="10" min="1">
+      </div>
+    `;
+    
+    const actionsDiv = stockDiv.querySelector('.stock-actions');
+    
+    const addBtn = document.createElement('button');
+    addBtn.className = 'btn btn-green';
+    addBtn.textContent = '+ Add';
+    addBtn.onclick = () => addStock(name);
+    actionsDiv.appendChild(addBtn);
+    
+    const reduceBtn = document.createElement('button');
+    reduceBtn.className = 'btn btn-red';
+    reduceBtn.textContent = '- Reduce';
+    reduceBtn.onclick = () => reduceStock(name);
+    actionsDiv.appendChild(reduceBtn);
+    
+    const alertBtn = document.createElement('button');
+    alertBtn.className = 'btn btn-wa';
+    alertBtn.textContent = '💬 CFO';
+    alertBtn.onclick = () => alertCFO(name, s.available);
+    actionsDiv.appendChild(alertBtn);
+    
+    content.appendChild(stockDiv);
+  });
+}
+
+function renderLogs() {
+  const content = document.getElementById('content');
+  
+  if (logs.length === 0) {
+    content.innerHTML = '<p style="text-align:center;color:#999;padding:40px;">No activity logs</p>';
+    return;
+  }
+  
+  content.innerHTML = '';
+  logs.slice().reverse().forEach(log => {
+    const logDiv = document.createElement('div');
+    logDiv.className = 'log-item';
+    logDiv.innerHTML = `
+      <div class="log-header">
+        <div class="log-admin">${log.admin}</div>
+        <div class="log-time">${toIST(log.timestamp)}</div>
+      </div>
+      <div class="log-details">
+        <strong>${log.action}</strong><br>
+        Order: #${log.orderId}<br>
+        ${log.details}
+      </div>
+    `;
+    content.appendChild(logDiv);
+  });
+}
+
+function addLog(action, orderId, details) {
+  const log = {
+    admin: adminName || 'Admin',
+    action,
+    orderId,
+    details,
+    timestamp: new Date().toISOString()
+  };
+  logs.push(log);
+  localStorage.setItem('admin_logs', JSON.stringify(logs));
+}
+
+async function verifyOrder(id) {
+  if (!confirm('Verify this order?')) return;
+  
+  console.log('Verifying order:', id);
+  
+  try {
+    const res = await fetch(`${API}/api/orders/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        status: 'verified',
+        verifiedBy: adminName || 'Admin'
+      })
+    });
+    
+    console.log('Verify response status:', res.status);
+    const data = await res.json();
+    console.log('Verify response data:', data);
+    
+    if (data.success) {
+      alert('✅ Order verified!');
+      addLog('Order Verified', id, `Status changed to verified by ${adminName}`);
+      await loadOrders();
+      updateStats();
+      renderContent();
+    } else {
+      alert('❌ Failed: ' + (data.error || 'Unknown error'));
+    }
+  } catch (e) {
+    console.error('Verify error:', e);
+    alert('❌ Error: ' + e.message);
+  }
+}
+
+async function rejectOrder(id) {
+  const reason = prompt('Rejection reason:', 'Payment not verified');
+  if (!reason) return;
+  
+  console.log('Rejecting order:', id, 'Reason:', reason);
+  
+  try {
+    const res = await fetch(`${API}/api/orders/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        status: 'rejected',
+        reason: reason
+      })
+    });
+    
+    console.log('Reject response status:', res.status);
+    const data = await res.json();
+    console.log('Reject response data:', data);
+    
+    if (data.success) {
+      alert('❌ Order rejected');
+      addLog('Order Rejected', id, `Reason: ${reason}`);
+      await loadOrders();
+      updateStats();
+      renderContent();
+    } else {
+      alert('❌ Failed: ' + (data.error || 'Unknown error'));
+    }
+  } catch (e) {
+    console.error('Reject error:', e);
+    alert('❌ Error: ' + e.message);
+  }
+}
+
+async function addStock(name) {
+  const qty = parseInt(document.getElementById(`qty_${name.replace(/\s/g,'_')}`).value);
+  if (!qty || qty <= 0) return alert('Enter valid quantity!');
+  
+  try {
+    const res = await fetch(`${API}/api/stock`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ productName: name, quantity: qty })
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert(`✅ Added ${qty} units`);
+      await init();
+    } else {
+      alert('❌ Failed');
+    }
+  } catch (e) {
+    alert('❌ Error: ' + e.message);
+  }
+}
+
+async function reduceStock(name) {
+  const qty = parseInt(document.getElementById(`qty_${name.replace(/\s/g,'_')}`).value);
+  if (!qty || qty <= 0) return alert('Enter valid quantity!');
+  
+  try {
+    const res = await fetch(`${API}/api/stock`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ productName: name, quantity: -qty })
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert(`✅ Reduced ${qty} units`);
+      await init();
+    } else {
+      alert('❌ Failed');
+    }
+  } catch (e) {
+    alert('❌ Error: ' + e.message);
+  }
+}
+
+function msgCustomer(phone, orderId, status) {
+  let msg = `Hello! This is Mist & Matter.\n\nYour Order #${orderId} status: ${status.toUpperCase()}\n\n`;
+  if (status === 'verified') {
+    msg += '✅ Payment verified! Your order will be shipped soon.\n\nThank you! 🌸';
+  } else if (status === 'rejected') {
+    msg += '❌ Payment verification failed. Please contact us.';
+  } else {
+    msg += '⏳ We are verifying your payment.';
+  }
+  window.open(`https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+function notifyAdmin(orderId, phone, total) {
+  const msg = `🔔 NEW ORDER!\n\nMist & Matter\n\nOrder: #${orderId}\nCustomer: ${phone}\nAmount: ₹${total}\n\n⚠️ Verify in admin panel\n\nTime: ${toIST(new Date().toISOString())}`;
+  window.open(`https://wa.me/919834690921?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+function alertCFO(product, qty) {
+  const msg = `📦 STOCK ALERT\n\nMist & Matter\n\nProduct: ${product}\nStock: ${qty} units\n${qty <= 10 ? '\n🚨 CRITICAL!' : '\n⚠️ Check stock'}\n\nTime: ${toIST(new Date().toISOString())}`;
+  window.open(`https://wa.me/919096063159?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+function openModal(src) {
+  document.getElementById('modalImg').src = src;
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function closeModal() {
+  document.getElementById('modal').style.display = 'none';
+}
+
+function logout() {
+  if (confirm('Logout?')) {
+    localStorage.removeItem('admin_access');
+    localStorage.removeItem('admin_name');
+    localStorage.removeItem('admin_role');
+    window.location.href = 'index.html';
+  }
+}
+
+setInterval(() => {
+  if (currentTab !== 'stock' && currentTab !== 'logs') init();
+}, 15000);
+
+init();
+</script>
+</body>
+</html>

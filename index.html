@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mist & Matter | Premium Fabric Perfumes & Linen Care</title>
+<meta name="description" content="Premium fabric perfumes for Indian homes. Long-lasting freshness, fabric-safe, Made in India. Free shipping above ₹999. Shop Royal Cotton, White Tea & Woods, Soft Cotton Cloud.">
+<meta name="keywords" content="fabric perfume, linen spray, fabric freshener, home fragrance, made in india, fabric care, cotton perfume">
+<meta property="og:title" content="Mist & Matter | Premium Fabric Perfumes">
+<meta property="og:description" content="Luxury fabric care for modern Indian homes. Fabric-safe, long-lasting freshness.">
+<meta property="og:image" content="https://mnm-website.pages.dev/logo3.png">
+<meta property="og:url" content="https://mnm-website.pages.dev">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://mnm-website.pages.dev">
+<link rel="icon" href="logo3.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Inter:wght@300;400&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="styles.css">
+
+<!-- Preload critical resources -->
+<link rel="preload" href="logo3.png" as="image">
+<link rel="preload" href="script.js" as="script">
+
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXXXXXX');
+</script>
+
+<!-- Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Mist & Matter",
+  "url": "https://mnm-website.pages.dev",
+  "logo": "https://mnm-website.pages.dev/logo3.png",
+  "description": "Premium fabric perfumes and linen care for Indian homes",
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "telephone": "+91-9834690921",
+    "contactType": "Customer Service"
+  }
+}
+</script>
+</head>
+
+<body>
+
+<header>
+  <div class="nav">
+    <div class="brand">
+      <a class="brand" onclick="goHome()" style="cursor:pointer; text-decoration:none;">
+  <img src="logo3.png" alt="Mist & Matter">
+  <span>Mist & Matter</span>
+</a>
+    </div>
+    <nav class="menu desktop-menu">
+  <a onclick="goToProducts()">PRODUCTS</a>
+  <a href="#waitlist">WAITLIST</a>
+  <a onclick="openCart()">CART (<span id="cartCount">0</span>)</a>
+  <a href="#" id="authLink" onclick="handleAuthClick(); return false;">LOGIN</a>
+</nav>
+
+<!-- MOBILE ICONS -->
+<div class="mobile-actions">
+  <button class="icon-btn" onclick="openCart()">🛒</button>
+  <button class="icon-btn" onclick="toggleMobileMenu()">☰</button>
+</div>
+
+  </div>
+</header>
+<div id="mobileMenu">
+  <a href="#goToProducts()" onclick="goToProducts(); closeMobileMenu()">Products</a>
+<a href="#waitlist" onclick="closeMobileMenu()">Waitlist</a>
+<a href="#" id="mobileAuthLink" onclick="handleAuthClick(); closeMobileMenu(); return false;">Login</a>
+</div>
+
+<div id="mainContent">
+<section class="hero">
+  <div>
+    <h1>Freshness You Can Wear</h1>
+    <p>Premium fabric and linen care for the modern Indian home</p>
+    <a href="#products" class="btn">EXPLORE PRODUCTS</a>
+  </div>
+</section>
+
+
+
+<section id="products">
+  <h2>Premium Fabric Perfumes That Speak Luxury</h2>
+  <p class="product-subtitle">Elevate Your Everyday — Limited Stock Available</p>
+  
+  <div style="max-width:400px;margin:0 auto 30px;">
+    <input type="text" id="searchInput" placeholder="🔍 Search products..." onkeyup="searchProducts()" style="width:100%;padding:12px 20px;border:2px solid #d9d2c6;border-radius:25px;font-size:14px;transition:border 0.3s;" onfocus="this.style.borderColor='#C9A24D'" onblur="this.style.borderColor='#d9d2c6'">
+  </div>
+  
+  <div class="product-grid" id="productGrid">
+
+    <!-- PRODUCT 1 -->
+<div class="product-card"
+  data-name="Royal Cotton Fabric Perfume"
+  data-price="599"
+  data-mrp="999"
+  data-img="royalcotton2.png"
+  data-rating="4.8"
+  data-category="Clean cotton freshness | Subtle, non-overpowering scent"
+  data-inclusions="Free Shipping above ₹999|Made in India|Safe for Clothes & Linens|Clean Cotton Freshness">
+
+  <div class="product-badge discount-badge"></div>
+  <button class="wishlist-heart" onclick="event.stopPropagation(); toggleWishlist('Royal Cotton Fabric Perfume', 599, 999, 'royalcotton2.png')" data-product="Royal Cotton Fabric Perfume">🤍</button>
+
+  <div class="product-thumb">
+    <img src="royalcotton2.png" alt="Royal Cotton Fabric Perfume" loading="lazy">
+  </div>
+
+  <div class="product-body">
+    <span class="product-category">Clean cotton freshness | Subtle, non-overpowering scent</span>
+    <h4>Royal Cotton Fabric Perfume</h4>
+
+    <div class="rating">
+      <span class="star">★</span> 4.8 <span>(1.3k Reviews)</span>
+    </div>
+
+    <div class="price">
+      <span class="mrp">₹999</span>
+      <span class="selling">₹599 100ml</span>
+    </div>
+
+    <button class="btn add-cart" data-product="Royal Cotton Fabric Perfume">
+  ADD TO CART
+</button>
+
+  </div>
+</div>
+
+
+<!-- PRODUCT 2 -->
+<div class="product-card"
+  data-name="White Tea & Woods Fabric Perfume"
+  data-price="699"
+  data-mrp="1299"
+  data-img="Tea.png"
+  data-rating="4.9"
+  data-category="Soft White Tea | Light Woody Warmth"
+  data-inclusions="Free Shipping above ₹999|Made in India|Safe for Clothes & Linens|Clean Cotton Freshness">
+
+  <div class="product-badge discount-badge"></div>
+  <button class="wishlist-heart" onclick="event.stopPropagation(); toggleWishlist('White Tea & Woods Fabric Perfume', 699, 1299, 'Tea.png')" data-product="White Tea & Woods Fabric Perfume">🤍</button>
+
+  <div class="product-thumb">
+    <img src="Tea.png" alt="White Tea & Woods Fabric Perfume" loading="lazy">
+  </div>
+
+  <div class="product-body">
+    <span class="product-category">Soft White Tea | Light Woody Warmth</span>
+    <h4>White Tea & Woods Fabric Perfume</h4>
+
+    <div class="rating">
+      <span class="star">★</span> 4.9 <span>(1.6k Reviews)</span>
+    </div>
+
+    <div class="price">
+      <span class="mrp">₹1299</span>
+      <span class="selling">₹699 100ml</span>
+    </div>
+
+    <button class="btn add-cart" data-product="White Tea & Woods Fabric Perfume">
+  ADD TO CART
+</button>
+
+  </div>
+</div>
+
+
+
+<!-- PRODUCT 3 -->
+<div class="product-card"
+  data-name="Soft Cotton Cloud Fabric Perfume"
+  data-price="599"
+  data-mrp="999"
+  data-img="softcotton.png"
+  data-rating="4.8"
+  data-category="Soft Cotton Freshness | Smooth Comforting Finish"
+  data-inclusions="Free Shipping above ₹999|Made in India|Safe for Clothes & Linens|Clean Cotton Freshness">
+
+  <div class="product-badge discount-badge"></div>
+  <button class="wishlist-heart" onclick="event.stopPropagation(); toggleWishlist('Soft Cotton Cloud Fabric Perfume', 599, 999, 'softcotton.png')" data-product="Soft Cotton Cloud Fabric Perfume">🤍</button>
+
+  <div class="product-thumb">
+    <img src="softcotton.png" alt="Soft Cotton Cloud Fabric Perfume" loading="lazy">
+  </div>
+
+  <div class="product-body">
+    <span class="product-category">Soft Cotton Freshness | Smooth Comforting Finish</span>
+    <h4>Soft Cotton Cloud Fabric Perfume</h4>
+
+    <div class="rating">
+      <span class="star">★</span> 4.8 <span>(1.1k Reviews)</span>
+    </div>
+
+    <div class="price">
+      <span class="mrp">₹999</span>
+      <span class="selling">₹599 100ml</span>
+    </div>
+
+    <button class="btn add-cart" data-product="Soft Cotton Cloud Fabric Perfume">
+  ADD TO CART
+</button>
+
+  </div>
+</div>
+
+<!-- PRODUCT 4 -->
+<div class="product-card"
+  data-name="Ivory Linen Fabric Perfume"
+  data-price="699"
+  data-mrp="1299"
+  data-img="ivorylinen.png"
+  data-rating="4.7"
+  data-category="Clean Linen Opening | Soft Airy Florals"
+  data-inclusions="Free Shipping above ₹999|Made in India|Safe for Clothes & Linens|Clean Cotton Freshness">
+
+  <div class="product-badge discount-badge"></div>
+  <button class="wishlist-heart" onclick="event.stopPropagation(); toggleWishlist('Ivory Linen Fabric Perfume', 699, 1299, 'ivorylinen.png')" data-product="Ivory Linen Fabric Perfume">🤍</button>
+
+  <div class="product-thumb">
+    <img src="ivorylinen.png" alt="Ivory Linen Fabric Perfume" loading="lazy">
+  </div>
+
+  <div class="product-body">
+    <span class="product-category">Clean Linen Opening | Soft Airy Florals</span>
+    <h4>Ivory Linen Fabric Perfume</h4>
+
+    <div class="rating">
+      <span class="star">★</span> 4.7 <span>(1.4k Reviews)</span>
+    </div>
+
+    <div class="price">
+      <span class="mrp">₹1299</span>
+      <span class="selling">₹699 100ml</span>
+    </div>
+
+    <button class="btn add-cart" data-product="Ivory Linen Fabric Perfume">
+  ADD TO CART
+</button>
+
+  </div>
+</div>
+
+</section>
+<section class="trust-bar">
+  <div class="trust-inner">
+
+    <div class="trust-item">
+      <div class="stars">★★★★★</div>
+      <p>4.8 Rated by 2,000+ Customers</p>
+    </div>
+
+    <div class="trust-item">
+      <strong>Free Shipping</strong>
+      <p>On orders above ₹999</p>
+    </div>
+
+    <div class="trust-item">
+      <strong>Made in India</strong>
+      <p>Proudly crafted for Indian homes</p>
+    </div>
+
+    <div class="trust-item">
+      <strong>Fabric Safe</strong>
+      <p>Gentle on clothes & linens</p>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- WAITLIST / NEWSLETTER -->
+<section class="section light" id="waitlist">
+  <div class="section-inner">
+    <h2>Join Our Exclusive Community</h2>
+    <p style="margin-bottom:20px;color:#666;">Get early access to new launches, exclusive offers & fabric care tips</p>
+    <form class="waitlist-form" id="newsletterForm" onsubmit="subscribeNewsletter(event)">
+      <input type="text" id="subName" placeholder="Your name" required style="margin-bottom:10px;">
+      <input type="email" id="subEmail" placeholder="Your email" required style="margin-bottom:10px;">
+      <input type="tel" id="subPhone" placeholder="Phone (optional)" pattern="[0-9]{10}" style="margin-bottom:10px;">
+      <button type="submit" class="btn">SUBSCRIBE NOW</button>
+    </form>
+    <p id="newsletterMsg" style="margin-top:15px;font-size:14px;"></p>
+  </div>
+</section>
+</div>
+
+
+<footer>
+  <div class="footer-grid">
+
+    <div>
+      <h4>Mist & Matter</h4>
+      <p>Premium fabric and linen care.</p>
+    </div>
+
+    <div>
+      <h4>Explore</h4>
+      <p><a onclick="openInfo('story')">Our Story</a></p>
+      <p><a onclick="openInfo('mission')">Mission</a></p>
+      <p><a onclick="openInfo('vision')">Vision</a></p>
+    </div>
+
+    <div>
+      <h4>Contact Us</h4>
+      <p>📞 <a href="tel:+919834690921">+91 98346 90921</a></p>
+      <p>📞 <a href="tel:+919096063159">+91 90960 63159</a></p>
+      <p>📧 <a href="mailto:mistnmatter@gmail.com">mistnmatter@gmail.com</a></p>
+    </div>
+
+    <div>
+      <h4>Social Media</h4>
+      <div class="social-icons">
+        <a href="https://www.instagram.com/mist_n_matter" target="_blank"><img src="instalogo.jpeg" loading="lazy"></a>
+        <a href="#"><img src="fblogo.jpeg" loading="lazy"></a>
+        <a href="#"><img src="twitterlogo.jpeg" loading="lazy"></a>
+        <a href="#"><img src="ytlogo.jpeg" loading="lazy"></a>
+      </div>
+    </div>
+    
+    <div>
+      <h4>Quick Links</h4>
+      <p><a href="#" onclick="openAdminAccess(); return false;" style="color:#999;font-size:0.75rem;">Admin</a></p>
+    </div>
+  </div>
+<p style="font-size:.7rem;color:#777;margin-top:20px;">
+  © 2026 Mist & Matter · Crafted with care in India
+</p>
+</footer>
+
+<!-- DRAWER -->
+<div id="cartOverlay"></div>
+<div id="drawer">
+  <div class="drawer-header">
+    <h3 id="drawerTitle"></h3>
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div id="drawerContent" style="padding:20px;"></div>
+</div>
+
+<!-- PRODUCT DETAIL DRAWER -->
+<div id="productDrawer" class="product-drawer">
+
+  <div class="pd-close" onclick="closeProduct()">✕</div>
+
+  <div class="pd-content">
+
+
+    <!-- LEFT IMAGE -->
+    <div class="pd-left">
+
+  <!-- MAIN IMAGE -->
+  <div class="img-magnifier-container">
+    <img id="pdImg" src="" alt="Product image">
+  </div>
+
+  <!-- THUMBNAILS -->
+  <div class="pd-thumbs" id="pdThumbs"></div>
+
+</div>
+
+
+    <!-- RIGHT INFO -->
+    <div class="pd-info">
+      <span class="pd-category" id="pdCategory"></span>
+      <h2 id="pdTitle"></h2>
+
+      <div class="pd-rating">
+        <span class="star">★</span>
+        <span id="pdRating"></span>
+        <span class="pd-review">(1.3k Reviews)</span>
+      </div>
+
+      <div class="pd-price">
+        <span class="pd-off" id="pdOff"></span>
+        <span class="pd-selling" id="pdPrice"></span>
+        <span class="pd-mrp" id="pdMrp"></span>
+        <p class="pd-note">Inclusive of all taxes</p>
+      </div>
+        
+      <div class="pd-trust-strip">
+  <span>🧪 Fabric Safe</span>
+  <span>🇮🇳 Made in India</span>
+  <span>🚚 Free Shipping ₹999+</span>
+  <span>💰 COD Available</span>
+</div>
+
+      <div class="pd-qty">
+        <button onclick="qtyChange(-1)">−</button>
+        <span id="pdQty">1</span>
+        <button onclick="qtyChange(1)">+</button>
+      </div>
+      <button class="btn pd-cart" onclick="addProductFromDetail()">
+        ADD TO CART
+      </button>
+     
+
+<button class="btn pd-buy" onclick="buyNow()">
+  BUY NOW
+</button>
+
+<p class="pd-policy">
+  No returns due to hygiene. Replacement only if damaged in transit.
+</p>
+
+<p class="pd-life">
+  ⏱️ Lasts 6–8 hours on fabric (varies with usage)
+</p>
+
+<div class="pd-inclusions" id="pdInclusions">
+  </div>
+<!-- PRODUCT HIGHLIGHTS -->
+<div class="pd-highlights">
+
+  <div class="pd-hl-item">
+    <span class="pd-hl-icon">🚛</span>
+    <strong>FREE SHIPPING ABOVE ₹999</strong>
+    <p>Get Your Product Today</p>
+  </div>
+
+  <div class="pd-hl-item">
+    <span class="pd-hl-icon">🧪</span>
+    <strong>FABRIC SAFE · NON-STAINING</strong>
+    <p>Safe fragrance standards</p>
+  </div>
+
+  <div class="pd-hl-item">
+    <span class="pd-hl-icon">⏱️</span>
+    <strong>LONG LASTING FRESHNESS</strong>
+    <p>Frehness You Live With</p>
+  </div>
+
+  <div class="pd-hl-item">
+    <span class="pd-hl-icon">🇮🇳</span>
+    <strong>MADE IN INDIA</strong>
+    <p>Crafted for Indian homes</p>
+  </div>
+
+</div>
+
+<div class="pd-info-text" id="pdInfoText">
+  <p style="font-size:.85rem; color:#555; line-height:1.7;">
+    Subtle, fabric-safe fragrance crafted for everyday comfort.
+  </p>
+</div>
+
+<div class="pd-for">
+  <strong>Perfect for</strong>
+  <ul>
+    <li>✔ Daily office wear</li>
+    <li>✔ Bedsheets & curtains</li>
+    <li>✔ Towels & wardrobes</li>
+    <li>✖ Not for direct skin application</li>
+  </ul>
+</div>
+
+<div class="pd-how">
+  <strong>How to use</strong>
+  <ol>
+    <li>Spray lightly on fabric (from 20–30 cm)</li>
+    <li>Let it air dry for 2 minutes</li>
+    <li>Enjoy subtle freshness</li>
+  </ol>
+</div>
+<p style="font-size:.7rem;color:#666;margin-top:20px;">
+  Mist & Matter products are designed to be subtle, fabric-safe, and
+  intentionally calm. No harsh chemicals. No overpowering scents.
+</p>
+
+<!-- Write a Review Section -->
+<div style="margin-top:30px;padding-top:30px;border-top:2px solid #e5e7eb;">
+  <h3 style="font-size:18px;margin-bottom:16px;color:#111;">Write a Review</h3>
+  <div style="background:#f9fafb;padding:20px;border-radius:10px;">
+    <div style="margin-bottom:12px;">
+      <label style="font-size:13px;color:#666;display:block;margin-bottom:6px;">Rating</label>
+      <select id="reviewRating" style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:6px;font-size:14px;">
+        <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+        <option value="4">⭐⭐⭐⭐ Good</option>
+        <option value="3">⭐⭐⭐ Average</option>
+        <option value="2">⭐⭐ Below Average</option>
+        <option value="1">⭐ Poor</option>
+      </select>
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:13px;color:#666;display:block;margin-bottom:6px;">Your Review</label>
+      <textarea id="reviewText" placeholder="Share your experience with this product..." style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:6px;font-size:14px;min-height:100px;resize:vertical;font-family:inherit;"></textarea>
+    </div>
+    <button class="btn dark" onclick="submitReview(currentProduct.name)" style="width:100%;background:#667eea;color:white;border:1px solid #667eea;padding:12px;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px;">SUBMIT REVIEW</button>
+  </div>
+</div>
+
+    </div>
+
+  </div>
+</div>
+
+<script src="script.js" defer></script>
+</body>
+</html>

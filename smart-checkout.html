@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mist & Matter - Smart Checkout</title>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: #f9fafb; }
+.checkout-container { max-width: 500px; margin: 40px auto; background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); overflow: hidden; position: relative; }
+.back-btn { position: absolute; top: 20px; left: 20px; background: rgba(255,255,255,0.9); border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 10; }
+.back-btn:hover { background: white; }
+.header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }
+.header h1 { font-size: 24px; margin-bottom: 5px; }
+.header p { opacity: 0.9; font-size: 14px; }
+.order-summary { padding: 24px; border-bottom: 2px dashed #e5e7eb; }
+.order-item { display: flex; justify-content: space-between; margin-bottom: 12px; }
+.order-item span { color: #666; }
+.order-item strong { color: #111; }
+.total { display: flex; justify-content: space-between; margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e7eb; font-size: 20px; font-weight: bold; }
+.total .amount { color: #667eea; }
+.payment-methods { padding: 24px; }
+.payment-methods h3 { margin-bottom: 16px; color: #111; font-size: 16px; }
+.method-card { border: 2px solid #e5e7eb; border-radius: 12px; padding: 16px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 16px; }
+.method-card:hover { border-color: #667eea; background: #f9fafb; }
+.method-card.recommended { border-color: #10b981; background: #f0fdf4; position: relative; }
+.method-card.recommended::after { content: '✨ RECOMMENDED - 0% Fees'; position: absolute; top: -10px; right: 10px; background: #10b981; color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; }
+.method-icon { font-size: 32px; }
+.method-info { flex: 1; }
+.method-info strong { display: block; color: #111; margin-bottom: 4px; }
+.method-info small { color: #666; font-size: 13px; }
+.method-fee { text-align: right; }
+.method-fee .fee { font-size: 12px; color: #10b981; font-weight: 600; }
+.method-fee .original { font-size: 11px; color: #999; text-decoration: line-through; }
+.btn { width: 100%; padding: 16px; background: #667eea; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 12px; }
+.btn:hover { background: #5568d3; }
+.btn-success { background: #10b981; }
+.btn-success:hover { background: #059669; }
+.security-badge { text-align: center; padding: 16px; color: #666; font-size: 12px; }
+.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; }
+.modal.active { display: flex; }
+.modal-content { background: white; border-radius: 16px; padding: 40px; max-width: 400px; width: 90%; text-align: center; }
+.qr-code { width: 200px; height: 200px; margin: 20px auto; background: white; border: 2px solid #e5e7eb; border-radius: 12px; overflow: hidden; }
+.qr-code img { width: 100%; height: 100%; object-fit: contain; }
+.upi-id { background: #f9fafb; padding: 12px; border-radius: 8px; margin: 16px 0; font-family: monospace; font-size: 14px; color: #667eea; font-weight: bold; }
+.copy-btn { background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; margin-left: 8px; }
+.timer { background: #fef3c7; padding: 12px; border-radius: 8px; margin: 16px 0; color: #92400e; font-weight: 600; }
+.upload-section { margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb; }
+.upload-btn { background: #f9fafb; border: 2px dashed #d1d5db; padding: 30px 20px; border-radius: 12px; cursor: pointer; text-align: center; color: #666; transition: all 0.3s; display: block; }
+.upload-btn:hover { border-color: #667eea; background: #f0f4ff; transform: translateY(-2px); }
+.upload-preview { margin-top: 20px; text-align: center; padding: 20px; background: #f0fdf4; border-radius: 12px; border: 2px solid #10b981; }
+.upload-preview img { max-width: 200px; max-height: 200px; border-radius: 8px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.upload-preview p { color: #10b981; font-size: 14px; font-weight: 600; margin: 0; }
+.success-icon { width: 80px; height: 80px; background: #10b981; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 48px; margin: 0 auto 20px; }
+</style>
+</head>
+<body>
+
+<div class="checkout-container">
+  <button class="back-btn" onclick="goBack()" title="Go Back">←</button>
+  
+  <div class="header">
+    <h1>🌸 Mist & Matter</h1>
+    <p>Complete Your Payment</p>
+  </div>
+  
+  <!-- Delivery Address Display -->
+  <div style="padding: 20px; background: #f9fafb; border-radius: 10px; margin: 20px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <h3 style="color: #111; font-size: 16px;">📍 Delivering to:</h3>
+      <button onclick="editAddress()" style="background:#667eea;color:white;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;">✏️ EDIT</button>
+    </div>
+    <div id="addressDisplay" style="font-size: 14px; color: #666;"></div>
+  </div>
+  
+  <div class="order-summary" id="orderSummary">
+    <!-- Cart items will load here -->
+  </div>
+  
+  <!-- Coupon Section -->
+  <div style="padding:20px;border-bottom:2px dashed #e5e7eb;">
+    <div style="display:flex;gap:10px;">
+      <input type="text" id="couponInput" placeholder="Enter coupon code" style="flex:1;padding:12px;border:2px solid #e5e7eb;border-radius:8px;font-size:14px;" onkeypress="if(event.key==='Enter') applyCoupon()">
+      <button onclick="applyCoupon()" style="background:#667eea;color:white;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px;">APPLY</button>
+    </div>
+    <div id="couponMessage" style="margin-top:8px;font-size:13px;"></div>
+    <div id="appliedCoupon" style="display:none;margin-top:10px;background:#d1fae5;padding:10px;border-radius:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="color:#065f46;font-weight:600;font-size:13px;" id="couponText"></span>
+        <button onclick="removeCoupon()" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:18px;">&times;</button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="payment-methods">
+    <h3>Choose Payment Method</h3>
+    
+    <!-- UPI - 0% Fees -->
+    <div class="method-card recommended" onclick="selectUPI()">
+      <div class="method-icon">📱</div>
+      <div class="method-info">
+        <strong>UPI Payment</strong>
+        <small>Google Pay, PhonePe, Paytm, BHIM</small>
+      </div>
+      <div class="method-fee">
+        <div class="fee">₹0 fees</div>
+        <div class="original">₹12 saved</div>
+      </div>
+    </div>
+    
+    <!-- Bank Transfer - 0% Fees -->
+    <div class="method-card" onclick="selectBankTransfer()">
+      <div class="method-icon">🏦</div>
+      <div class="method-info">
+        <strong>Direct Bank Transfer</strong>
+        <small>NEFT/IMPS/RTGS - Instant</small>
+      </div>
+      <div class="method-fee">
+        <div class="fee">₹0 fees</div>
+        <div class="original">₹12 saved</div>
+      </div>
+    </div>
+    
+    <!-- WhatsApp Pay - 0% Fees -->
+    <div class="method-card" onclick="selectWhatsApp()">
+      <div class="method-icon">💬</div>
+      <div class="method-info">
+        <strong>WhatsApp Payment</strong>
+        <small>Pay via WhatsApp - Super Easy</small>
+      </div>
+      <div class="method-fee">
+        <div class="fee">₹0 fees</div>
+        <div class="original">₹12 saved</div>
+      </div>
+    </div>
+    
+    <!-- Card/NetBanking - Gateway -->
+    <div class="method-card" onclick="selectRazorpay()">
+      <div class="method-icon">💳</div>
+      <div class="method-info">
+        <strong>Razorpay Payment</strong>
+        <small>Cards, UPI, NetBanking - Instant</small>
+      </div>
+      <div class="method-fee">
+        <div class="fee">Secure</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="security-badge">
+    🔒 100% Secure Payment | Your data is safe with us
+  </div>
+</div>
+
+<!-- UPI Modal -->
+<div id="upiModal" class="modal">
+  <div class="modal-content" style="max-width:500px;max-height:90vh;overflow-y:auto;">
+    <button onclick="closeModal()" style="position:absolute;top:15px;right:15px;background:none;border:none;font-size:24px;cursor:pointer;color:#666;">&times;</button>
+    
+    <h2 style="margin-bottom:10px;">📱 Pay via UPI</h2>
+    <p style="color: #666; margin-bottom:20px;font-size:14px;">Scan QR or use UPI ID</p>
+    
+    <div class="qr-code">
+      <img src="qr_payment_m&m.jpeg" alt="Scan QR Code">
+    </div>
+    
+    <div style="text-align: center; margin: 16px 0; color: #999; font-size: 14px;">OR</div>
+    
+    <div class="upi-id">
+      vijaymahato127-3@okaxis
+      <button class="copy-btn" onclick="copyUPI()">Copy</button>
+    </div>
+    
+    <div class="timer" id="paymentTimer">⏱️ Complete payment in <span id="timerDisplay">10:00</span> minutes</div>
+    
+    <div class="upload-section">
+      <p style="font-size: 15px; color: #111; margin-bottom: 16px; font-weight: 600; text-align: center;">📸 Upload Payment Screenshot</p>
+      <label class="upload-btn" id="uploadLabel">
+        <input type="file" accept="image/*" style="display: none;" onchange="uploadScreenshot(this)" id="fileInput">
+        <div style="font-size:48px;margin-bottom:12px;">📤</div>
+        <div style="font-weight:600;color:#667eea;font-size:15px;margin-bottom:6px;">Click to Upload</div>
+        <div style="font-size:13px;color:#999;">JPG, PNG or PDF (Max 5MB)</div>
+      </label>
+      <div id="uploadPreview" class="upload-preview" style="display:none;">
+        <img id="previewImg" alt="Payment Screenshot">
+        <p>✓ Screenshot Uploaded Successfully!</p>
+      </div>
+    </div>
+    
+    <button class="btn btn-success" onclick="verifyPayment()" style="margin-top:20px;">I Have Paid</button>
+  </div>
+</div>
+
+<!-- Bank Transfer Modal -->
+<div id="bankModal" class="modal">
+  <div class="modal-content" style="max-width:500px;max-height:90vh;overflow-y:auto;">
+    <button onclick="closeModal()" style="position:absolute;top:15px;right:15px;background:none;border:none;font-size:24px;cursor:pointer;color:#666;">&times;</button>
+    
+    <h2 style="margin-bottom:10px;">🏦 Bank Transfer Details</h2>
+    <p style="color: #666; margin-bottom:20px;font-size:14px;">Transfer to our account</p>
+    
+    <div style="background: #f9fafb; padding: 16px; border-radius: 8px; text-align: left; margin-bottom: 16px;">
+      <div style="margin-bottom: 12px;">
+        <small style="color: #666;">Account Name</small>
+        <div style="font-weight: 600; color: #111;">Mist & Matter</div>
+      </div>
+      <div style="margin-bottom: 12px;">
+        <small style="color: #666;">Account Number</small>
+        <div style="font-weight: 600; color: #111; font-family: monospace;">1234567890</div>
+      </div>
+      <div style="margin-bottom: 12px;">
+        <small style="color: #666;">IFSC Code</small>
+        <div style="font-weight: 600; color: #111; font-family: monospace;">HDFC0001234</div>
+      </div>
+      <div>
+        <small style="color: #666;">Bank Name</small>
+        <div style="font-weight: 600; color: #111;">HDFC Bank</div>
+      </div>
+    </div>
+    
+    <div class="timer" id="paymentTimer2">⏱️ Complete payment in <span id="timerDisplay2">10:00</span> minutes</div>
+    
+    <div class="upload-section">
+      <p style="font-size: 14px; color: #666; margin-bottom: 12px;">Upload payment screenshot</p>
+      <label class="upload-btn">
+        <input type="file" accept="image/*" style="display: none;" onchange="uploadScreenshot(this)">
+        📸 Upload Screenshot
+      </label>
+    </div>
+    
+    <button class="btn btn-success" onclick="verifyPayment()" style="margin-top:20px;">I Have Paid</button>
+  </div>
+</div>
+
+<!-- WhatsApp Modal -->
+<div id="whatsappModal" class="modal">
+  <div class="modal-content">
+    <h2>💬 WhatsApp Payment</h2>
+    <p style="color: #666; margin: 10px 0 20px;">Complete payment via WhatsApp</p>
+    
+    <div style="background: #f0fdf4; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+      <div style="font-size: 48px; margin-bottom: 12px;">📱</div>
+      <p style="color: #166534; font-weight: 600; margin-bottom: 8px;">Click button below to open WhatsApp</p>
+      <p style="color: #666; font-size: 14px;">We'll send you payment link instantly</p>
+    </div>
+    
+    <button class="btn btn-success" onclick="openWhatsApp()">
+      💬 Open WhatsApp
+    </button>
+    <button class="btn" style="background: #6b7280; margin-top: 8px;" onclick="closeModal()">Cancel</button>
+  </div>
+</div>
+
+<!-- Success Modal -->
+<div id="successModal" class="modal">
+  <div class="modal-content">
+    <div class="success-icon">✓</div>
+    <h2 style="color: #10b981; margin-bottom: 12px;">Payment Received!</h2>
+    <p style="color: #666; margin-bottom: 20px;">Your order is being processed</p>
+    <p style="font-size: 14px; color: #666;">Order ID: <strong>MNM' + Date.now() + '</strong></p>
+    <p style="font-size: 14px; color: #666; margin-top: 8px;">You'll receive confirmation via email & SMS</p>
+    <button class="btn" onclick="location.reload()">Done</button>
+  </div>
+</div>
+
+<script>
+// API Configuration
+const API_BASE = 'https://mnm-orders-api.mistnmatter.workers.dev';
+const API_URL = API_BASE; // For compatibility
+
+const API = {
+  async call(endpoint, options = {}) {
+    const headers = {
+      'Content-Type': 'application/json',
+      ...options.headers
+    };
+    const response = await fetch(`${API_BASE}${endpoint}`, { ...options, headers });
+    return response.json();
+  },
+  post: (endpoint, data) => API.call(endpoint, { method: 'POST', body: JSON.stringify(data) })
+};
+
+// Load order data from cart
+const checkoutData = JSON.parse(localStorage.getItem('checkout_data') || '{}');
+const deliveryAddress = JSON.parse(localStorage.getItem('mm_delivery_address') || '{}');
+
+if (!checkoutData.cart || checkoutData.cart.length === 0) {
+  alert('Cart is empty!');
+  window.location.href = 'index.html';
+}
+
+// Don't redirect if coming from Buy Now - let displayAddress handle it
+// if (!deliveryAddress.fullName) {
+//   alert('Please add delivery address!');
+//   window.location.href = 'checkout-address.html';
+// }
+
+// Display address
+async function displayAddress() {
+  const userPhone = localStorage.getItem('mm_user_phone');
+  
+  try {
+    const response = await fetch(`${API_BASE}/api/users/${userPhone}`);
+    const result = await response.json();
+    
+    if (result.success && result.addresses && result.addresses.length > 0) {
+      const addresses = result.addresses;
+      
+      // Find default or use first address
+      let selectedAddress = addresses.find(a => a.is_default) || addresses[0];
+      
+      // Check if there's a saved selection
+      const savedAddressId = localStorage.getItem('selected_address_id');
+      if (savedAddressId) {
+        const found = addresses.find(a => a.id == savedAddressId);
+        if (found) selectedAddress = found;
+      }
+      
+      // Update delivery address in localStorage
+      deliveryAddress.fullName = selectedAddress.full_name;
+      deliveryAddress.phone = selectedAddress.phone;
+      deliveryAddress.address = selectedAddress.address;
+      deliveryAddress.city = selectedAddress.city;
+      deliveryAddress.state = selectedAddress.state;
+      deliveryAddress.pincode = selectedAddress.pincode;
+      deliveryAddress.landmark = selectedAddress.landmark;
+      localStorage.setItem('mm_delivery_address', JSON.stringify(deliveryAddress));
+      
+      let html = '';
+      
+      if (addresses.length > 1) {
+        // Multiple addresses - show dropdown
+        html = `
+          <select id="addressSelect" onchange="changeAddress()" style="width:100%;padding:10px;border:2px solid #e5e7eb;border-radius:8px;font-size:14px;margin-bottom:10px;">
+            ${addresses.map(addr => `
+              <option value="${addr.id}" ${addr.id == selectedAddress.id ? 'selected' : ''}>
+                ${addr.full_name} - ${addr.address}, ${addr.city}, ${addr.state} - ${addr.pincode}
+              </option>
+            `).join('')}
+          </select>
+        `;
+      }
+      
+      html += `
+        <div style="background:#f9fafb;padding:12px;border-radius:8px;">
+          <strong>${selectedAddress.full_name}</strong><br>
+          ${selectedAddress.address}<br>
+          ${selectedAddress.city}, ${selectedAddress.state} - ${selectedAddress.pincode}<br>
+          Phone: ${selectedAddress.phone}
+        </div>
+      `;
+      
+      document.getElementById('addressDisplay').innerHTML = html;
+      
+      // Update checkout data with address
+      checkoutData.phone = selectedAddress.phone;
+      checkoutData.customerName = selectedAddress.full_name;
+      checkoutData.address = {
+        fullName: selectedAddress.full_name,
+        phone: selectedAddress.phone,
+        address: selectedAddress.address,
+        city: selectedAddress.city,
+        state: selectedAddress.state,
+        pincode: selectedAddress.pincode,
+        landmark: selectedAddress.landmark
+      };
+      localStorage.setItem('checkout_data', JSON.stringify(checkoutData));
+    } else {
+      // No addresses - redirect to add address
+      alert('Please add delivery address!');
+      window.location.href = 'checkout-address.html';
+    }
+  } catch (error) {
+    console.error('Load addresses error:', error);
+    // Fallback to localStorage address
+    const html = `
+      <strong>${deliveryAddress.fullName}</strong><br>
+      ${deliveryAddress.address}<br>
+      ${deliveryAddress.city}, ${deliveryAddress.state} - ${deliveryAddress.pincode}<br>
+      Phone: ${deliveryAddress.phone}
+    `;
+    document.getElementById('addressDisplay').innerHTML = html;
+    
+    checkoutData.phone = deliveryAddress.phone;
+    checkoutData.customerName = deliveryAddress.fullName;
+    checkoutData.address = deliveryAddress;
+    localStorage.setItem('checkout_data', JSON.stringify(checkoutData));
+  }
+}
+
+async function changeAddress() {
+  const selectedId = document.getElementById('addressSelect').value;
+  localStorage.setItem('selected_address_id', selectedId);
+  await displayAddress();
+}
+
+displayAddress();
+
+// Render order summary
+function renderOrderSummary() {
+  let html = '';
+  checkoutData.cart.forEach(item => {
+    html += `
+      <div class="order-item">
+        <span>${item.name} (100ml) × ${item.qty}</span>
+        <strong>₹${item.price * item.qty}</strong>
+      </div>
+    `;
+  });
+  
+  html += `
+    <div class="order-item">
+      <span>Shipping</span>
+      <strong>${checkoutData.shipping === 0 ? 'FREE' : '₹' + checkoutData.shipping}</strong>
+    </div>
+    <div class="total">
+      <span>Total Amount</span>
+      <span class="amount">₹${checkoutData.total}</span>
+    </div>
+  `;
+  
+  document.getElementById('orderSummary').innerHTML = html;
+}
+
+renderOrderSummary();
+
+function selectUPI() {
+  document.getElementById('upiModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+  startTimer();
+}
+
+function selectBankTransfer() {
+  document.getElementById('bankModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+  startTimer();
+}
+
+let timerInterval;
+function startTimer() {
+  let timeLeft = 600;
+  
+  if (timerInterval) clearInterval(timerInterval);
+  
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    const display = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    
+    const timer1 = document.getElementById('timerDisplay');
+    const timer2 = document.getElementById('timerDisplay2');
+    if (timer1) timer1.textContent = display;
+    if (timer2) timer2.textContent = display;
+    
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      alert('⏰ Payment time expired! Please try again.');
+      closeModal();
+    }
+  }, 1000);
+}
+
+function selectWhatsApp() {
+  document.getElementById('whatsappModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function selectRazorpay() {
+  initiateRazorpayPayment();
+}
+
+async function initiateRazorpayPayment() {
+  const checkoutData = JSON.parse(localStorage.getItem('checkout_data') || '{}');
+  const orderId = 'MNM' + Date.now();
+  
+  try {
+    // Create Razorpay order via API
+    const result = await API.post('/api/payment/razorpay/create', {
+      amount: checkoutData.total,
+      currency: 'INR',
+      orderId: orderId,
+      customerInfo: {
+        name: deliveryAddress.fullName,
+        phone: deliveryAddress.phone,
+        email: deliveryAddress.email || ''
+      }
+    });
+    
+    if (result.success) {
+      // Open Razorpay checkout
+      const options = {
+        key: result.key,
+        amount: result.amount,
+        currency: result.currency,
+        name: 'Mist & Matter',
+        description: 'Premium Fabric Perfumes',
+        order_id: result.razorpayOrderId,
+        handler: async function(response) {
+          await verifyRazorpayPayment(response, orderId);
+        },
+        prefill: {
+          name: deliveryAddress.fullName,
+          email: deliveryAddress.email || '',
+          contact: deliveryAddress.phone
+        },
+        theme: { color: '#667eea' }
+      };
+      
+      const rzp = new Razorpay(options);
+      rzp.open();
+    }
+  } catch (error) {
+    console.error('Razorpay error:', error);
+    alert('❌ Payment initiation failed. Please try again.');
+  }
+}
+
+async function verifyRazorpayPayment(response, orderId) {
+  try {
+    const result = await API.post('/api/payment/razorpay/verify', {
+      razorpay_order_id: response.razorpay_order_id,
+      razorpay_payment_id: response.razorpay_payment_id,
+      razorpay_signature: response.razorpay_signature,
+      orderId: orderId
+    });
+    
+    if (result.success && result.verified) {
+      // Create full order
+      await createFullOrder(orderId, 'Razorpay');
+      showSuccessModal(orderId);
+    } else {
+      alert('❌ Payment verification failed.');
+    }
+  } catch (error) {
+    console.error('Verification error:', error);
+    alert('❌ Payment verification failed.');
+  }
+}
+
+async function createFullOrder(orderId, paymentMethod) {
+  const checkoutData = JSON.parse(localStorage.getItem('checkout_data') || '{}');
+  
+  const orderData = {
+    customerName: deliveryAddress.fullName,
+    phone: deliveryAddress.phone,
+    email: localStorage.getItem('mm_user_email') || null,
+    total: checkoutData.total,
+    shipping: checkoutData.shipping || 0,
+    paymentMethod: paymentMethod,
+    items: checkoutData.cart.map(item => ({ name: item.name, qty: item.qty, price: item.price })),
+    address: deliveryAddress
+  };
+  
+  await API.post('/api/orders', orderData);
+}
+
+function showSuccessModal(orderId) {
+  document.getElementById('successModal').classList.add('active');
+  localStorage.removeItem('cart');
+  localStorage.removeItem('checkout_data');
+  
+  setTimeout(() => { window.location.href = 'index.html'; }, 3000);
+}
+
+function selectGateway() {
+  selectRazorpay();
+}
+
+function closeModal() {
+  document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
+  document.body.style.overflow = 'auto';
+  if (timerInterval) clearInterval(timerInterval);
+}
+
+function copyUPI() {
+  navigator.clipboard.writeText('vijaymahato127-3@okaxis');
+  alert('✓ UPI ID copied!');
+}
+
+function editAddress() {
+  window.location.href = 'checkout-address.html';
+}
+
+function goBack() {
+  window.history.back();
+}
+
+async function uploadScreenshot(input) {
+  if (input.files && input.files[0]) {
+    const file = input.files[0];
+    const uploadLabel = document.getElementById('uploadLabel');
+    
+    // Show loading
+    uploadLabel.innerHTML = '<div style="font-size:32px;margin-bottom:8px;">⏳</div><div style="font-weight:600;color:#667eea;">Uploading...</div>';
+    
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+      document.getElementById('previewImg').src = e.target.result;
+      document.getElementById('uploadPreview').style.display = 'block';
+      uploadLabel.style.display = 'none';
+      
+      const screenshot = e.target.result;
+      const checkoutData = JSON.parse(localStorage.getItem('checkout_data') || '{}');
+      
+      const orderData = {
+        customerName: checkoutData.customerName,
+        phone: checkoutData.phone,
+        email: localStorage.getItem('mm_user_email') || null,
+        total: checkoutData.total,
+        shipping: checkoutData.shipping || 0,
+        paymentMethod: 'UPI',
+        screenshot: screenshot,
+        items: checkoutData.cart.map(item => ({ name: item.name, qty: item.qty, price: item.price })),
+        address: checkoutData.address
+      };
+      
+      try {
+        const response = await fetch(`${API_URL}/api/orders`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(orderData)
+        });
+        const result = await response.json();
+        if (result.success) {
+          localStorage.setItem('last_order_id', result.orderId);
+        } else {
+          alert('✗ Error creating order. Please try again.');
+          uploadLabel.style.display = 'block';
+          uploadLabel.innerHTML = '<div style="font-size:48px;margin-bottom:12px;">📤</div><div style="font-weight:600;color:#667eea;font-size:15px;margin-bottom:6px;">Click to Upload</div><div style="font-size:13px;color:#999;">JPG, PNG or PDF (Max 5MB)</div>';
+          document.getElementById('uploadPreview').style.display = 'none';
+        }
+      } catch (error) {
+        console.error('Order creation error:', error);
+        alert('✗ Network error. Please check your connection.');
+        uploadLabel.style.display = 'block';
+        uploadLabel.innerHTML = '<div style="font-size:48px;margin-bottom:12px;">📤</div><div style="font-weight:600;color:#667eea;font-size:15px;margin-bottom:6px;">Click to Upload</div><div style="font-size:13px;color:#999;">JPG, PNG or PDF (Max 5MB)</div>';
+        document.getElementById('uploadPreview').style.display = 'none';
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+function verifyPayment() {
+  const lastOrderId = localStorage.getItem('last_order_id');
+  if (!lastOrderId) {
+    alert('⚠️ Please upload payment screenshot first!');
+    return;
+  }
+  
+  if (timerInterval) clearInterval(timerInterval);
+  
+  closeModal();
+  
+  // Simple confirmation message
+  alert('✅ Order Confirmation will be sent shortly!');
+  
+  localStorage.removeItem('cart');
+  localStorage.removeItem('checkout_data');
+  
+  const userPhone = localStorage.getItem('mm_user_phone');
+  if (userPhone) {
+    fetch(`${API_URL}/api/cart`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userPhone, cart: [] })
+    }).catch(err => console.error('Cart clear error:', err));
+  }
+  
+  window.location.href = 'index.html';
+}
+
+function openWhatsApp() {
+  let text = 'Hi! I want to complete payment for my Mist & Matter order.\n\n';
+  
+  checkoutData.cart.forEach(item => {
+    text += `${item.name} × ${item.qty} = ₹${item.price * item.qty}\n`;
+  });
+  
+  text += `\nSubtotal: ₹${checkoutData.subtotal}`;
+  text += `\nShipping: ${checkoutData.shipping === 0 ? 'FREE' : '₹' + checkoutData.shipping}`;
+  text += `\nTotal Amount: ₹${checkoutData.total}`;
+  
+  window.open('https://wa.me/919834690921?text=' + encodeURIComponent(text), '_blank');
+  closeModal();
+  alert('✓ WhatsApp opened!\n\nOur team will send you payment link instantly.');
+}
+
+let appliedCouponData = null;
+
+async function applyCoupon() {
+  const code = document.getElementById('couponInput').value.trim().toUpperCase();
+  const messageEl = document.getElementById('couponMessage');
+  
+  if (!code) {
+    messageEl.innerHTML = '<span style="color:#ef4444;">Please enter a coupon code</span>';
+    return;
+  }
+  
+  try {
+    const response = await fetch(`${API_URL}/api/coupon/validate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        code: code,
+        orderTotal: checkoutData.subtotal,
+        userPhone: deliveryAddress.phone
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      appliedCouponData = result.coupon;
+      document.getElementById('appliedCoupon').style.display = 'block';
+      document.getElementById('couponText').textContent = `${code} applied! You saved ₹${result.discount}`;
+      messageEl.innerHTML = '<span style="color:#10b981;">✓ Coupon applied successfully!</span>';
+      document.getElementById('couponInput').value = '';
+      
+      // Update total
+      checkoutData.discount = result.discount;
+      checkoutData.total = checkoutData.subtotal + checkoutData.shipping - result.discount;
+      localStorage.setItem('checkout_data', JSON.stringify(checkoutData));
+      renderOrderSummary();
+    } else {
+      messageEl.innerHTML = `<span style="color:#ef4444;">${result.error}</span>`;
+    }
+  } catch (error) {
+    messageEl.innerHTML = '<span style="color:#ef4444;">Error applying coupon</span>';
+  }
+}
+
+function removeCoupon() {
+  appliedCouponData = null;
+  document.getElementById('appliedCoupon').style.display = 'none';
+  document.getElementById('couponMessage').innerHTML = '';
+  
+  checkoutData.discount = 0;
+  checkoutData.total = checkoutData.subtotal + checkoutData.shipping;
+  localStorage.setItem('checkout_data', JSON.stringify(checkoutData));
+  renderOrderSummary();
+}
+</script>
+
+</body>
+</html>
