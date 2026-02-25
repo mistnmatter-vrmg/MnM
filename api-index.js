@@ -47,6 +47,14 @@ export default {
         return await loginUser(request, env, corsHeaders);
       }
       
+      if (path === '/api/auth/reset-password' && request.method === 'POST') {
+        return await resetPassword(request, env, corsHeaders);
+      }
+      
+      if (path === '/api/users/profile' && request.method === 'PUT') {
+        return await updateUserProfile(request, env, corsHeaders);
+      }
+      
       if (path === '/api/users/login' && request.method === 'POST') {
         return await userLogin(request, env, corsHeaders);
       }
@@ -329,22 +337,22 @@ async function userLogin(request, env, corsHeaders) {
 async function registerUser(request, env, corsHeaders) {
   const data = await request.json();
   
-  const { results } = await env.DB.prepare('SELECT * FROM users WHERE phone = ?').bind(data.phone).all();
+  const { results } = await env.DB.prepare('SELECT * FROM users WHERE phone = ? OR email = ?').bind(data.phone, data.email).all();
   
   if (results.length > 0) {
-    return new Response(JSON.stringify({ success: false, message: 'Phone already registered' }), {
+    return new Response(JSON.stringify({ success: false, error: 'Phone or email already registered' }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
   
-  await env.DB.prepare('INSERT INTO users (name, phone, email, last_login) VALUES (?, ?, ?, ?)').bind(
-    data.name, data.phone, data.email, new Date().toISOString()
+  await env.DB.prepare('INSERT INTO users (name, phone, email, dob, last_login) VALUES (?, ?, ?, ?, ?)').bind(
+    data.name, data.phone, data.email, data.dob || null, new Date().toISOString()
   ).run();
   
   const { results: newUser } = await env.DB.prepare('SELECT * FROM users WHERE phone = ?').bind(data.phone).all();
   
-  return new Response(JSON.stringify({ success: true, user: newUser[0] }), {
+  return new Response(JSON.stringify({ success: true, user: newUser[0], token: 'dummy-token' }), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' }
   });
 }
@@ -353,20 +361,51 @@ async function registerUser(request, env, corsHeaders) {
 async function loginUser(request, env, corsHeaders) {
   const data = await request.json();
   
-  const { results } = await env.DB.prepare('SELECT * FROM users WHERE phone = ?').bind(data.phone).all();
+  const { results } = await env.DB.prepare('SELECT * FROM users WHERE email = ?').bind(data.email).all();
   
   if (results.length === 0) {
-    return new Response(JSON.stringify({ success: false, message: 'User not found' }), {
+    return new Response(JSON.stringify({ success: false, error: 'User not found' }), {
       status: 404,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
   
-  await env.DB.prepare('UPDATE users SET last_login = ? WHERE phone = ?').bind(
-    new Date().toISOString(), data.phone
+  await env.DB.prepare('UPDATE users SET last_login = ? WHERE email = ?').bind(
+    new Date().toISOString(), data.email
   ).run();
   
-  return new Response(JSON.stringify({ success: true, user: results[0] }), {
+  return new Response(JSON.stringify({ success: true, user: results[0], token: 'dummy-token' }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+  });
+}
+
+// Reset Password
+async function resetPassword(request, env, corsHeaders) {
+  const data = await request.json();
+  
+  const { results } = await env.DB.prepare('SELECT * FROM users WHERE email = ?').bind(data.email).all();
+  
+  if (results.length === 0) {
+    return new Response(JSON.stringify({ success: false, error: 'User not found' }), {
+      status: 404,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+  
+  return new Response(JSON.stringify({ success: true }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+  });
+}
+
+// Update User Profile
+async function updateUserProfile(request, env, corsHeaders) {
+  const data = await request.json();
+  
+  await env.DB.prepare('UPDATE users SET name = ?, email = ?, dob = ? WHERE phone = ?').bind(
+    data.name, data.email, data.dob || null, data.phone
+  ).run();
+  
+  return new Response(JSON.stringify({ success: true }), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' }
   });
 }

@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS users (
   name TEXT NOT NULL,
   phone TEXT UNIQUE NOT NULL,
   email TEXT,
+  dob TEXT,
   created_at TEXT DEFAULT CURRENT_TIMESTAMP,
   last_login TEXT,
   total_orders INTEGER DEFAULT 0,
