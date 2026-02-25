@@ -272,9 +272,11 @@ async function getStock(request, env, corsHeaders) {
   
   const stock = {};
   results.forEach(item => {
-    stock[item.product_name] = {
+    const key = `${item.product_name} ${item.size}`;
+    stock[key] = {
       available: item.available,
-      reserved: item.reserved
+      reserved: item.reserved,
+      size: item.size
     };
   });
   
@@ -286,12 +288,15 @@ async function getStock(request, env, corsHeaders) {
 // Update Stock
 async function updateStock(request, env, corsHeaders) {
   const data = await request.json();
+  const parts = data.productName.split(' ');
+  const size = parts.pop();
+  const name = parts.join(' ');
   
   await env.DB.prepare(`
     UPDATE stock 
     SET available = available + ?, updated_at = ?
-    WHERE product_name = ?
-  `).bind(data.quantity, new Date().toISOString(), data.productName).run();
+    WHERE product_name = ? AND size = ?
+  `).bind(data.quantity, new Date().toISOString(), name, size).run();
   
   return new Response(JSON.stringify({ success: true }), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' }
