@@ -46,7 +46,7 @@ body { font-family: 'Segoe UI', sans-serif; background: #f5f7fa; }
 .stock-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center; margin-bottom: 8px; }
 .stock-grid div strong { display: block; font-size: 20px; color: #667eea; }
 .stock-grid div span { font-size: 10px; color: #666; }
-.stock-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.stock-input { padding: 6px; border: 2px solid #e5e7eb; border-radius: 5px; width: 70px; font-size: 13px; }
 .variant-btn { padding: 6px 12px; border: 2px solid #e5e7eb; border-radius: 5px; cursor: pointer; font-weight: 600; font-size: 11px; background: white; margin-right: 6px; margin-bottom: 6px; }
 .variant-btn.active { background: #667eea; color: white; border-color: #667eea; }
 .variant-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb; }
@@ -526,44 +526,50 @@ async function rejectOrder(id) {
   }
 }
 
-async function addStock(name) {
-  const qty = parseInt(document.getElementById(`qty_${name.replace(/\s/g,'_')}`).value);
+async function addStock(fullName) {
+  const baseName = fullName.replace(/ (30ml|50ml|100ml)$/i, '').trim();
+  const baseId = baseName.replace(/\s/g,'_');
+  const qty = parseInt(document.getElementById(`qty_${baseId}`).value);
+  
   if (!qty || qty <= 0) return alert('Enter valid quantity!');
   
   try {
     const res = await fetch(`${API}/api/stock`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ productName: name, quantity: qty })
+      body: JSON.stringify({ productName: fullName, quantity: qty })
     });
     const data = await res.json();
     if (data.success) {
-      alert(`✅ Added ${qty} units`);
+      alert(`✅ Added ${qty} units to ${fullName}`);
       await init();
     } else {
-      alert('❌ Failed');
+      alert('❌ Failed: ' + (data.error || 'Unknown error'));
     }
   } catch (e) {
     alert('❌ Error: ' + e.message);
   }
 }
 
-async function reduceStock(name) {
-  const qty = parseInt(document.getElementById(`qty_${name.replace(/\s/g,'_')}`).value);
+async function reduceStock(fullName) {
+  const baseName = fullName.replace(/ (30ml|50ml|100ml)$/i, '').trim();
+  const baseId = baseName.replace(/\s/g,'_');
+  const qty = parseInt(document.getElementById(`qty_${baseId}`).value);
+  
   if (!qty || qty <= 0) return alert('Enter valid quantity!');
   
   try {
     const res = await fetch(`${API}/api/stock`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ productName: name, quantity: -qty })
+      body: JSON.stringify({ productName: fullName, quantity: -qty })
     });
     const data = await res.json();
     if (data.success) {
-      alert(`✅ Reduced ${qty} units`);
+      alert(`✅ Reduced ${qty} units from ${fullName}`);
       await init();
     } else {
-      alert('❌ Failed');
+      alert('❌ Failed: ' + (data.error || 'Unknown error'));
     }
   } catch (e) {
     alert('❌ Error: ' + e.message);
