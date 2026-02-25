@@ -196,10 +196,11 @@ function initProductCards() {
       e.stopPropagation();
       const size = card.dataset.size || '50ml';
       addToCart(
-        `${card.dataset.name} - ${size}`,
+        card.dataset.name,
         Number(card.dataset.price),
         Number(card.dataset.mrp),
-        card.dataset.img
+        card.dataset.img,
+        size
       );
     });
   });
@@ -320,15 +321,20 @@ function updateCartCount() {
   el.innerText = count;
 }
 
-function addToCart(name, price, mrp, img, qty = 1) {
-  let item = cart.find(p => p.name === name);
+function addToCart(name, price, mrp, img, size, qty = 1) {
+  // Extract base name and size
+  const baseName = name.replace(/ - (30ml|50ml|100ml)$/i, '').trim();
+  const itemSize = size || name.match(/(30ml|50ml|100ml)$/i)?.[0] || '100ml';
+  const itemKey = `${baseName}_${itemSize}`;
+  
+  let item = cart.find(p => p.name === baseName && p.size === itemSize);
   let isRepeat = localStorage.getItem("mm_repeat_buyer") === "true";
   let finalPrice = isRepeat ? Math.round(price * 0.9) : price;
   
   if (item) {
     item.qty += qty;
   } else {
-    cart.push({ name, price, mrp, img, qty: qty });
+    cart.push({ name: baseName, size: itemSize, price, mrp, img, qty });
   }
   
   saveCart();
@@ -365,7 +371,7 @@ function renderCart() {
   // Group by size for Buy 2 Get 1 Free
   const sizeGroups = {};
   cart.forEach(item => {
-    const size = item.name.match(/(30ml|50ml|100ml)/i)?.[0] || '100ml';
+    const size = item.size || item.name.match(/(30ml|50ml|100ml)/i)?.[0] || '100ml';
     if (!sizeGroups[size]) sizeGroups[size] = [];
     sizeGroups[size].push(item);
   });
@@ -399,12 +405,15 @@ function renderCart() {
     subtotal += i.price * i.qty;
     totalMrp += i.mrp * i.qty;
     
+    const displayName = i.size ? `${i.name}` : i.name;
+    const displaySize = i.size || '100ml';
+    
     html += `
       <div class="cart-row">
         <img src="${i.img}" class="cart-img">
         <div class="cart-info">
-          <strong>${i.name}</strong>
-          <div class="cart-price">₹${i.price} × ${i.qty}</div>
+          <strong>${displayName}</strong>
+          <div class="cart-price">₹${i.price} × ${i.qty} <span style="color:#999;font-size:11px;margin-left:5px;">${displaySize}</span></div>
         </div>
         <div class="qty">
           <button onclick="changeQty(${idx},-1)">−</button>
@@ -627,10 +636,11 @@ function addProductFromDetail() {
   }
   
   addToCart(
-    `${currentProduct.name} - ${selectedSize.size}`,
+    currentProduct.name,
     selectedSize.price,
     selectedSize.mrp,
     currentProduct.img,
+    selectedSize.size,
     pdQty
   );
 }
@@ -643,7 +653,8 @@ async function buyNow() {
   
   // Create temporary cart with only this product
   const buyNowCart = [{
-    name: `${currentProduct.name} - ${selectedSize.size}`,
+    name: currentProduct.name,
+    size: selectedSize.size,
     price: selectedSize.price,
     mrp: selectedSize.mrp,
     img: currentProduct.img,
@@ -815,7 +826,8 @@ function openWhatsApp() {
   let text = "Hi, I want to order:\n\n";
   let subtotal = 0;
   cart.forEach(i => {
-    text += `${i.name} × ${i.qty} = ₹${i.price * i.qty}\n`;
+    const displayName = i.size ? `${i.name} (${i.size})` : i.name;
+    text += `${displayName} × ${i.qty} = ₹${i.price * i.qty}\n`;
     subtotal += i.price * i.qty;
   });
   const shipping = subtotal >= 999 ? 0 : 99;
