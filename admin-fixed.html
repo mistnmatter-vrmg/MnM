@@ -47,7 +47,9 @@ body { font-family: 'Segoe UI', sans-serif; background: #f5f7fa; }
 .stock-grid div strong { display: block; font-size: 20px; color: #667eea; }
 .stock-grid div span { font-size: 10px; color: #666; }
 .stock-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-.stock-input { padding: 6px; border: 2px solid #e5e7eb; border-radius: 5px; width: 70px; font-size: 13px; }
+.variant-btn { padding: 6px 12px; border: 2px solid #e5e7eb; border-radius: 5px; cursor: pointer; font-weight: 600; font-size: 11px; background: white; margin-right: 6px; margin-bottom: 6px; }
+.variant-btn.active { background: #667eea; color: white; border-color: #667eea; }
+.variant-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb; }
 .log-item { border-left: 3px solid #667eea; background: #f9fafb; padding: 12px; margin-bottom: 10px; border-radius: 5px; }
 .log-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 5px; }
 .log-admin { font-weight: bold; color: #667eea; font-size: 13px; }
@@ -317,51 +319,103 @@ function renderStock() {
     return;
   }
   
-  content.innerHTML = '';
+  // Group products by base name
+  const grouped = {};
   Object.keys(stock).forEach(name => {
-    const s = stock[name];
-    const status = s.available > 20 ? '✅ Good' : s.available > 10 ? '⚠️ Low' : '🔴 Critical';
-    const inputId = `qty_${name.replace(/\s/g,'_')}`;
+    const baseName = name.replace(/ (30ml|50ml|100ml)$/i, '').trim() || name;
+    if (!grouped[baseName]) grouped[baseName] = {};
+    
+    const variant = name.match(/(30ml|50ml|100ml)$/i)?.[0] || '100ml';
+    grouped[baseName][variant] = { name, ...stock[name] };
+  });
+  
+  content.innerHTML = '';
+  
+  Object.keys(grouped).forEach(baseName => {
+    const variants = grouped[baseName];
+    const firstVariant = Object.keys(variants)[0];
+    let selectedVariant = firstVariant;
     
     const stockDiv = document.createElement('div');
     stockDiv.className = 'stock-item';
+    
+    const totalAvailable = Object.values(variants).reduce((sum, v) => sum + v.available, 0);
+    const status = totalAvailable > 60 ? '✅ Good' : totalAvailable > 30 ? '⚠️ Low' : '🔴 Critical';
+    
     stockDiv.innerHTML = `
       <div class="stock-top">
-        <div class="stock-name">${name}</div>
+        <div class="stock-name">${baseName}</div>
         <div>${status}</div>
       </div>
-      <div class="stock-grid">
-        <div><strong>${s.available}</strong><span>Available</span></div>
-        <div><strong>${s.reserved}</strong><span>Reserved</span></div>
-        <div><strong>${s.available + s.reserved}</strong><span>Total</span></div>
+      <div style="margin-bottom:12px;">
+        ${Object.keys(variants).sort((a,b) => parseInt(a) - parseInt(b)).map(v => 
+          `<button class="variant-btn ${v === firstVariant ? 'active' : ''}" data-variant="${v}" data-base="${baseName}">${v}</button>`
+        ).join('')}
       </div>
-      <div class="stock-actions">
-        <input type="number" class="stock-input" id="${inputId}" value="10" min="1">
+      <div class="variant-section" id="variant_${baseName.replace(/\s/g,'_')}">
+        <div class="stock-grid">
+          <div><strong id="avail_${baseName.replace(/\s/g,'_')}">0</strong><span>Available</span></div>
+          <div><strong id="resv_${baseName.replace(/\s/g,'_')}">0</strong><span>Reserved</span></div>
+          <div><strong id="total_${baseName.replace(/\s/g,'_')}">0</strong><span>Total</span></div>
+        </div>
+        <div class="stock-actions">
+          <input type="number" class="stock-input" id="qty_${baseName.replace(/\s/g,'_')}" value="10" min="1">
+          <button class="btn btn-green" id="addBtn_${baseName.replace(/\s/g,'_')}">+ Add</button>
+          <button class="btn btn-red" id="reduceBtn_${baseName.replace(/\s/g,'_')}">- Reduce</button>
+          <button class="btn btn-wa" id="alertBtn_${baseName.replace(/\s/g,'_')}">💬 CFO</button>
+        </div>
       </div>
     `;
     
-    const actionsDiv = stockDiv.querySelector('.stock-actions');
-    
-    const addBtn = document.createElement('button');
-    addBtn.className = 'btn btn-green';
-    addBtn.textContent = '+ Add';
-    addBtn.onclick = () => addStock(name);
-    actionsDiv.appendChild(addBtn);
-    
-    const reduceBtn = document.createElement('button');
-    reduceBtn.className = 'btn btn-red';
-    reduceBtn.textContent = '- Reduce';
-    reduceBtn.onclick = () => reduceStock(name);
-    actionsDiv.appendChild(reduceBtn);
-    
-    const alertBtn = document.createElement('button');
-    alertBtn.className = 'btn btn-wa';
-    alertBtn.textContent = '💬 CFO';
-    alertBtn.onclick = () => alertCFO(name, s.available);
-    actionsDiv.appendChild(alertBtn);
-    
     content.appendChild(stockDiv);
+    
+    // Update display for first variant
+    updateVariantDisplay(baseName, firstVariant, variants[firstVariant]);
+    
+    // Add variant button click handlers
+    stockDiv.querySelectorAll('.variant-btn').forEach(btn => {
+      btn.onclick = () => {
+        const variant = btn.dataset.variant;
+        const base = btn.dataset.base;
+        
+        // Update active state
+        stockDiv.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        // Update display
+        updateVariantDisplay(base, variant, variants[variant]);
+      };
+    });
+    
+    // Add action button handlers
+    document.getElementById(`addBtn_${baseName.replace(/\s/g,'_')}`).onclick = () => {
+      const activeBtn = stockDiv.querySelector('.variant-btn.active');
+      const variant = activeBtn.dataset.variant;
+      const fullName = variants[variant].name;
+      addStock(fullName);
+    };
+    
+    document.getElementById(`reduceBtn_${baseName.replace(/\s/g,'_')}`).onclick = () => {
+      const activeBtn = stockDiv.querySelector('.variant-btn.active');
+      const variant = activeBtn.dataset.variant;
+      const fullName = variants[variant].name;
+      reduceStock(fullName);
+    };
+    
+    document.getElementById(`alertBtn_${baseName.replace(/\s/g,'_')}`).onclick = () => {
+      const activeBtn = stockDiv.querySelector('.variant-btn.active');
+      const variant = activeBtn.dataset.variant;
+      const v = variants[variant];
+      alertCFO(v.name, v.available);
+    };
   });
+}
+
+function updateVariantDisplay(baseName, variant, data) {
+  const baseId = baseName.replace(/\s/g,'_');
+  document.getElementById(`avail_${baseId}`).textContent = data.available;
+  document.getElementById(`resv_${baseId}`).textContent = data.reserved;
+  document.getElementById(`total_${baseId}`).textContent = data.available + data.reserved;
 }
 
 function renderLogs() {
