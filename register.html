@@ -55,7 +55,7 @@ async function handleRegister(e){
     password:document.getElementById('password').value
   };
   try{
-    const res=await fetch('https://preprod-mnm-api.mistnmatter.workers.dev/register',{
+    const res=await fetch('https://mnm-orders-api.mistnmatter.workers.dev/api/auth/register',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify(data)

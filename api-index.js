@@ -325,6 +325,52 @@ async function userLogin(request, env, corsHeaders) {
   });
 }
 
+// Register User
+async function registerUser(request, env, corsHeaders) {
+  const data = await request.json();
+  
+  const { results } = await env.DB.prepare('SELECT * FROM users WHERE phone = ?').bind(data.phone).all();
+  
+  if (results.length > 0) {
+    return new Response(JSON.stringify({ success: false, message: 'Phone already registered' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+  
+  await env.DB.prepare('INSERT INTO users (name, phone, email, last_login) VALUES (?, ?, ?, ?)').bind(
+    data.name, data.phone, data.email, new Date().toISOString()
+  ).run();
+  
+  const { results: newUser } = await env.DB.prepare('SELECT * FROM users WHERE phone = ?').bind(data.phone).all();
+  
+  return new Response(JSON.stringify({ success: true, user: newUser[0] }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+  });
+}
+
+// Login User
+async function loginUser(request, env, corsHeaders) {
+  const data = await request.json();
+  
+  const { results } = await env.DB.prepare('SELECT * FROM users WHERE phone = ?').bind(data.phone).all();
+  
+  if (results.length === 0) {
+    return new Response(JSON.stringify({ success: false, message: 'User not found' }), {
+      status: 404,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+  
+  await env.DB.prepare('UPDATE users SET last_login = ? WHERE phone = ?').bind(
+    new Date().toISOString(), data.phone
+  ).run();
+  
+  return new Response(JSON.stringify({ success: true, user: results[0] }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+  });
+}
+
 // Save User Address
 async function saveUserAddress(request, env, corsHeaders) {
   const data = await request.json();
