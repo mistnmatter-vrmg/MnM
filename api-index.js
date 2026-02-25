@@ -272,7 +272,7 @@ async function getStock(request, env, corsHeaders) {
   
   const stock = {};
   results.forEach(item => {
-    const key = `${item.product_name} ${item.size}`;
+    const key = `${item.product_name} - ${item.size}`;
     stock[key] = {
       available: item.available,
       reserved: item.reserved,

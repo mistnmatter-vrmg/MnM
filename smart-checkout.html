@@ -403,7 +403,7 @@ function renderOrderSummary() {
   checkoutData.cart.forEach(item => {
     html += `
       <div class="order-item">
-        <span>${item.name} (100ml) × ${item.qty}</span>
+        <span>${item.name} × ${item.qty}</span>
         <strong>₹${item.price * item.qty}</strong>
       </div>
     `;

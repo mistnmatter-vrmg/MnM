@@ -196,11 +196,10 @@ function initProductCards() {
       e.stopPropagation();
       const size = card.dataset.size || '50ml';
       addToCart(
-        card.dataset.name,
+        `${card.dataset.name} - ${size}`,
         Number(card.dataset.price),
         Number(card.dataset.mrp),
-        card.dataset.img,
-        size
+        card.dataset.img
       );
     });
   });
@@ -321,20 +320,15 @@ function updateCartCount() {
   el.innerText = count;
 }
 
-function addToCart(name, price, mrp, img, size, qty = 1) {
-  // Extract base name and size
-  const baseName = name.replace(/ - (30ml|50ml|100ml)$/i, '').trim();
-  const itemSize = size || name.match(/(30ml|50ml|100ml)$/i)?.[0] || '100ml';
-  const itemKey = `${baseName}_${itemSize}`;
-  
-  let item = cart.find(p => p.name === baseName && p.size === itemSize);
+function addToCart(name, price, mrp, img, qty = 1) {
+  let item = cart.find(p => p.name === name);
   let isRepeat = localStorage.getItem("mm_repeat_buyer") === "true";
   let finalPrice = isRepeat ? Math.round(price * 0.9) : price;
   
   if (item) {
     item.qty += qty;
   } else {
-    cart.push({ name: baseName, size: itemSize, price, mrp, img, qty });
+    cart.push({ name, price, mrp, img, qty: qty });
   }
   
   saveCart();
@@ -371,7 +365,7 @@ function renderCart() {
   // Group by size for Buy 2 Get 1 Free
   const sizeGroups = {};
   cart.forEach(item => {
-    const size = item.size || item.name.match(/(30ml|50ml|100ml)/i)?.[0] || '100ml';
+    const size = item.name.match(/(30ml|50ml|100ml)/i)?.[0] || '100ml';
     if (!sizeGroups[size]) sizeGroups[size] = [];
     sizeGroups[size].push(item);
   });
@@ -636,11 +630,10 @@ function addProductFromDetail() {
   }
   
   addToCart(
-    currentProduct.name,
+    `${currentProduct.name} - ${selectedSize.size}`,
     selectedSize.price,
     selectedSize.mrp,
     currentProduct.img,
-    selectedSize.size,
     pdQty
   );
 }
@@ -653,8 +646,7 @@ async function buyNow() {
   
   // Create temporary cart with only this product
   const buyNowCart = [{
-    name: currentProduct.name,
-    size: selectedSize.size,
+    name: `${currentProduct.name} - ${selectedSize.size}`,
     price: selectedSize.price,
     mrp: selectedSize.mrp,
     img: currentProduct.img,
@@ -826,8 +818,7 @@ function openWhatsApp() {
   let text = "Hi, I want to order:\n\n";
   let subtotal = 0;
   cart.forEach(i => {
-    const displayName = i.size ? `${i.name} (${i.size})` : i.name;
-    text += `${displayName} × ${i.qty} = ₹${i.price * i.qty}\n`;
+    text += `${i.name} × ${i.qty} = ₹${i.price * i.qty}\n`;
     subtotal += i.price * i.qty;
   });
   const shipping = subtotal >= 999 ? 0 : 99;
