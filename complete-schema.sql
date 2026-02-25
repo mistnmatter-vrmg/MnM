@@ -83,9 +83,17 @@ CREATE TABLE IF NOT EXISTS stock (
 -- Insert Initial Stock
 INSERT OR IGNORE INTO stock (product_name, available, reserved) VALUES
   ('Royal Cotton', 50, 0),
+  ('Royal Cotton 50ml', 30, 0),
+  ('Royal Cotton 30ml', 30, 0),
   ('White Tea & Woods', 30, 0),
+  ('White Tea & Woods 50ml', 30, 0),
+  ('White Tea & Woods 30ml', 30, 0),
   ('scc', 40, 0),
-  ('Ivory Linen', 35, 0);
+  ('scc 50ml', 30, 0),
+  ('scc 30ml', 30, 0),
+  ('Ivory Linen', 35, 0),
+  ('Ivory Linen 50ml', 30, 0),
+  ('Ivory Linen 30ml', 30, 0);
 
 -- User Sessions Table
 CREATE TABLE IF NOT EXISTS user_sessions (

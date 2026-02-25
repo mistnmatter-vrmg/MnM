@@ -83,6 +83,30 @@ const productInfo = {
   "Ivory Linen Fabric Perfume": "Crisp linen softened by airy florals."
 };
 
+// Product size variants with pricing
+const productSizes = {
+  "Royal Cotton Fabric Perfume": [
+    { size: "30ml", price: 199, mrp: 349 },
+    { size: "50ml", price: 399, mrp: 649 },
+    { size: "100ml", price: 599, mrp: 999 }
+  ],
+  "White Tea & Woods Fabric Perfume": [
+    { size: "30ml", price: 379, mrp: 429 },
+    { size: "50ml", price: 449, mrp: 749 },
+    { size: "100ml", price: 699, mrp: 1299 }
+  ],
+  "Soft Cotton Cloud Fabric Perfume": [
+    { size: "30ml", price: 199, mrp: 349 },
+    { size: "50ml", price: 399, mrp: 649 },
+    { size: "100ml", price: 599, mrp: 999 }
+  ],
+  "Ivory Linen Fabric Perfume": [
+    { size: "30ml", price: 379, mrp: 429 },
+    { size: "50ml", price: 449, mrp: 749 },
+    { size: "100ml", price: 699, mrp: 1299 }
+  ]
+};
+
 // Cart Management
 let cart;
 const drawer = document.getElementById("drawer");
@@ -123,6 +147,9 @@ document.addEventListener("DOMContentLoaded", async function () {
   
   // Load products in background
   loadProductsFromAPI().catch(err => console.error('Products load error:', err));
+  
+  // Load review counts dynamically
+  loadAllReviewCounts().catch(err => console.error('Review counts load error:', err));
   
   // Check for hash navigation
   if (window.location.hash === '#profile-addresses') {
@@ -167,8 +194,9 @@ function initProductCards() {
     const addBtn = card.querySelector(".add-cart");
     addBtn.addEventListener("click", function (e) {
       e.stopPropagation();
+      const size = card.dataset.size || '50ml';
       addToCart(
-        card.dataset.name,
+        `${card.dataset.name} - ${size}`,
         Number(card.dataset.price),
         Number(card.dataset.mrp),
         card.dataset.img
@@ -334,6 +362,39 @@ function renderCart() {
   let subtotal = 0;
   let totalMrp = 0;
   
+  // Group by size for Buy 2 Get 1 Free
+  const sizeGroups = {};
+  cart.forEach(item => {
+    const size = item.name.match(/(30ml|50ml|100ml)/i)?.[0] || '100ml';
+    if (!sizeGroups[size]) sizeGroups[size] = [];
+    sizeGroups[size].push(item);
+  });
+  
+  let buy2get1Discount = 0;
+  let offerApplied = false;
+  
+  // Calculate discount per size group
+  Object.keys(sizeGroups).forEach(size => {
+    const items = sizeGroups[size];
+    const totalQty = items.reduce((sum, item) => sum + item.qty, 0);
+    
+    if (totalQty >= 3) {
+      const freeItems = Math.floor(totalQty / 3);
+      // Sort by price and make cheapest items free
+      const sortedItems = [...items].sort((a, b) => a.price - b.price);
+      let remaining = freeItems;
+      
+      for (const item of sortedItems) {
+        if (remaining <= 0) break;
+        const freeFromThis = Math.min(remaining, item.qty);
+        buy2get1Discount += item.price * freeFromThis;
+        remaining -= freeFromThis;
+      }
+      
+      offerApplied = true;
+    }
+  });
+  
   cart.forEach((i, idx) => {
     subtotal += i.price * i.qty;
     totalMrp += i.mrp * i.qty;
@@ -354,9 +415,10 @@ function renderCart() {
     `;
   });
   
-  const savings = totalMrp - subtotal;
-  const shipping = subtotal >= 999 ? 0 : 99;
-  const grandTotal = subtotal + shipping;
+  const discountedSubtotal = subtotal - buy2get1Discount;
+  const savings = totalMrp - discountedSubtotal;
+  const shipping = discountedSubtotal >= 999 ? 0 : 99;
+  const grandTotal = discountedSubtotal + shipping;
   
   html += `
     <div style="margin-top:20px;padding-top:20px;border-top:1px solid #e5e7eb;">
@@ -365,6 +427,7 @@ function renderCart() {
         <span>🔒 Secure</span>
         <span>🇮🇳 Made in India</span>
       </div>
+      ${offerApplied ? `<div style="background:#d1fae5;color:#065f46;padding:10px;border-radius:8px;font-size:.8rem;margin:10px 0;text-align:center;font-weight:600;">🎉 Buy 2 Get 1 FREE Applied! You saved ₹${buy2get1Discount}</div>` : `<div style="background:#fef3c7;color:#92400e;padding:10px;border-radius:8px;font-size:.8rem;margin:10px 0;text-align:center;">🎁 Buy 2 of same size, Get 1 FREE! (30ml, 50ml or 100ml)</div>`}
       <div class="cart-urgency">
         Selling fast · Dispatched in 24 hrs
       </div>
@@ -372,6 +435,7 @@ function renderCart() {
         <span>Subtotal</span>
         <strong>₹${subtotal}</strong>
       </div>
+      ${buy2get1Discount > 0 ? `<div class="cart-line" style="color:#10b981;"><span>Buy 2 Get 1 FREE</span><strong>-₹${buy2get1Discount}</strong></div>` : ''}
       <div class="cart-line">
         <span>Shipping</span>
         <strong>${shipping === 0 ? "FREE" : `₹${shipping}`}</strong>
@@ -425,11 +489,16 @@ cartOverlay.addEventListener("click", closeDrawer);
 // Product Detail
 let currentProduct = {};
 let pdQty = 1;
+let selectedSize = null;
 
 function openProduct(product) {
   closeMobileMenu();
   currentProduct = product;
   pdQty = 1;
+  
+  // Set default size to 50ml (index 1)
+  const sizes = productSizes[product.name];
+  selectedSize = sizes ? sizes[1] : { size: "50ml", price: product.price, mrp: product.mrp };
   
   document.body.classList.add("drawer-open");
   
@@ -438,15 +507,16 @@ function openProduct(product) {
   
   document.getElementById("pdTitle").innerText = product.name;
   document.getElementById("pdCategory").innerText = product.category;
-  document.getElementById("pdPrice").innerText = `₹${product.price}`;
-  document.getElementById("pdMrp").innerText = `₹${product.mrp}`;
   document.getElementById("pdRating").innerText = product.rating;
   document.getElementById("pdQty").innerText = pdQty;
   
-  loadProductImages(product.name);
+  // Render size selector
+  renderSizeSelector(product.name);
   
-  const discount = Math.round(((product.mrp - product.price) / product.mrp) * 100);
-  document.getElementById("pdOff").innerText = `${discount}% OFF`;
+  // Update price based on selected size
+  updateProductPrice();
+  
+  loadProductImages(product.name);
   
   const infoBox = document.getElementById("pdInfoText");
   if (infoBox && productInfo[product.name]) {
@@ -462,6 +532,74 @@ function openProduct(product) {
   loadProductReviews(product.name);
   
   document.getElementById("productDrawer").classList.add("open");
+}
+
+function renderSizeSelector(productName) {
+  const sizeSelector = document.getElementById("sizeSelector");
+  const sizes = productSizes[productName];
+  
+  if (!sizes || !sizeSelector) return;
+  
+  sizeSelector.innerHTML = '';
+  
+  sizes.forEach((sizeOption, index) => {
+    const btn = document.createElement('button');
+    btn.textContent = sizeOption.size;
+    btn.style.cssText = `
+      padding: 12px 20px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      background: white;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.3s;
+      flex: 1;
+      min-width: 80px;
+    `;
+    
+    // Default select 50ml (index 1)
+    if (index === 1) {
+      btn.style.borderColor = '#667eea';
+      btn.style.background = '#667eea';
+      btn.style.color = 'white';
+    }
+    
+    btn.onclick = () => selectSize(productName, index);
+    sizeSelector.appendChild(btn);
+  });
+}
+
+function selectSize(productName, sizeIndex) {
+  const sizes = productSizes[productName];
+  selectedSize = sizes[sizeIndex];
+  
+  // Update button styles
+  const buttons = document.querySelectorAll('#sizeSelector button');
+  buttons.forEach((btn, idx) => {
+    if (idx === sizeIndex) {
+      btn.style.borderColor = '#667eea';
+      btn.style.background = '#667eea';
+      btn.style.color = 'white';
+    } else {
+      btn.style.borderColor = '#e5e7eb';
+      btn.style.background = 'white';
+      btn.style.color = '#111';
+    }
+  });
+  
+  // Update price
+  updateProductPrice();
+}
+
+function updateProductPrice() {
+  if (!selectedSize) return;
+  
+  document.getElementById("pdPrice").innerText = `₹${selectedSize.price}`;
+  document.getElementById("pdMrp").innerText = `₹${selectedSize.mrp}`;
+  
+  const discount = Math.round(((selectedSize.mrp - selectedSize.price) / selectedSize.mrp) * 100);
+  document.getElementById("pdOff").innerText = `${discount}% OFF`;
 }
 
 function closeProduct() {
@@ -483,28 +621,37 @@ function qtyChange(val) {
 }
 
 function addProductFromDetail() {
+  if (!selectedSize) {
+    showMiniConfirm('Please select a size');
+    return;
+  }
+  
   addToCart(
-    currentProduct.name,
-    currentProduct.price,
-    currentProduct.mrp,
+    `${currentProduct.name} - ${selectedSize.size}`,
+    selectedSize.price,
+    selectedSize.mrp,
     currentProduct.img,
     pdQty
   );
-  // Don't change button - keep it as ADD TO CART
 }
 
 async function buyNow() {
+  if (!selectedSize) {
+    showMiniConfirm('Please select a size');
+    return;
+  }
+  
   // Create temporary cart with only this product
   const buyNowCart = [{
-    name: currentProduct.name,
-    price: currentProduct.price,
-    mrp: currentProduct.mrp,
+    name: `${currentProduct.name} - ${selectedSize.size}`,
+    price: selectedSize.price,
+    mrp: selectedSize.mrp,
     img: currentProduct.img,
     qty: pdQty
   }];
   
   // Calculate totals
-  const subtotal = currentProduct.price * pdQty;
+  const subtotal = selectedSize.price * pdQty;
   const shipping = subtotal >= 999 ? 0 : 99;
   const total = subtotal + shipping;
   
@@ -1711,7 +1858,8 @@ async function submitReview(productName) {
       showMiniConfirm('✓ Review submitted successfully!');
       document.getElementById('reviewText').value = '';
       document.getElementById('reviewRating').value = '5';
-      loadProductReviews(productName);
+      // Immediately reload reviews
+      await loadProductReviews(productName);
     } else {
       showMiniConfirm(result.error || 'Error submitting review');
     }
@@ -1844,6 +1992,35 @@ async function subscribeNewsletter(event) {
 }
 
 window.subscribeNewsletter = subscribeNewsletter;
+
+// Load review counts for all products on page load
+async function loadAllReviewCounts(){
+  const products=['Royal Cotton Fabric Perfume','White Tea & Woods Fabric Perfume','Soft Cotton Cloud Fabric Perfume','Ivory Linen Fabric Perfume'];
+  
+  for(const productName of products){
+    try{
+      const res=await fetch(`${API_URL}/api/reviews?product=${encodeURIComponent(productName)}`);
+      const data=await res.json();
+      
+      if(data.success){
+        const count=data.reviews.length;
+        
+        // Update product card count
+        const cards=document.querySelectorAll('.product-card');
+        cards.forEach(card=>{
+          if(card.dataset.name===productName){
+            const ratingSpan=card.querySelector('.rating span:last-child');
+            if(ratingSpan)ratingSpan.textContent=`(${count} Reviews)`;
+          }
+        });
+      }
+    }catch(e){
+      console.error('Error loading review count for',productName,e);
+    }
+  }
+}
+
+window.loadAllReviewCounts=loadAllReviewCounts;
 
 // Abandoned Cart Tracking
 let abandonedCartTimer;

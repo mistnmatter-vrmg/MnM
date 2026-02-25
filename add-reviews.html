@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Add Fake Reviews</title>
+<style>
+body{font-family:Arial;padding:40px;background:#f5f5f5;}
+.container{max-width:800px;margin:0 auto;background:white;padding:30px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,0.1);}
+h1{color:#333;margin-bottom:20px;}
+#log{background:#000;color:#0f0;padding:20px;border-radius:5px;height:400px;overflow-y:auto;font-family:monospace;font-size:14px;line-height:1.6;}
+button{background:#667eea;color:white;border:none;padding:15px 30px;border-radius:5px;cursor:pointer;font-size:16px;font-weight:600;margin-top:20px;}
+button:hover{background:#5568d3;}
+button:disabled{background:#ccc;cursor:not-allowed;}
+.success{color:#10b981;}
+.error{color:#ef4444;}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>🎯 Add Fake Reviews to Database</h1>
+<p>This will add realistic fake reviews to the database for all products.</p>
+<button id="startBtn" onclick="addFakeReviews()">START ADDING REVIEWS</button>
+<div id="log" style="margin-top:20px;"></div>
+</div>
+
+<script>
+const API_URL='https://mnm-orders-api.mistnmatter.workers.dev';
+const logEl=document.getElementById('log');
+const btn=document.getElementById('startBtn');
+
+function log(msg,type='info'){
+  const color=type==='success'?'#10b981':type==='error'?'#ef4444':'#0f0';
+  logEl.innerHTML+=`<div style="color:${color}">${msg}</div>`;
+  logEl.scrollTop=logEl.scrollHeight;
+}
+
+const fakeReviews={
+  "Royal Cotton Fabric Perfume":[
+    {userName:"Priya Sharma",phone:"9876543210",rating:5,text:"Love the subtle cotton scent! Perfect for daily wear clothes."},
+    {userName:"Amit Kumar",phone:"9876543211",rating:5,text:"Finally a fabric perfume that doesn't overpower. Lasts all day!"},
+    {userName:"Sneha Mehta",phone:"9876543212",rating:4,text:"Good product. Wish it lasted a bit longer on thin fabrics."},
+    {userName:"Rahul Patel",phone:"9876543213",rating:5,text:"Best purchase! My shirts smell fresh even after a full day."},
+    {userName:"Anjali Desai",phone:"9876543214",rating:5,text:"Gentle fragrance, doesn't irritate my sensitive skin."},
+    {userName:"Vikram Reddy",phone:"9876543215",rating:4,text:"Nice scent but could be stronger. Still worth the price."},
+    {userName:"Meera Joshi",phone:"9876543216",rating:5,text:"Perfect for bedsheets! The whole room smells amazing."},
+    {userName:"Karthik Nair",phone:"9876543217",rating:5,text:"Clean, fresh smell. Not artificial at all. Will buy again!"},
+    {userName:"Shalini Bose",phone:"9876543218",rating:5,text:"Excellent quality! Worth every penny."},
+    {userName:"Nikhil Tiwari",phone:"9876543219",rating:4,text:"Good for office wear. Colleagues compliment the freshness."},
+    {userName:"Preeti Kapoor",phone:"9876543220",rating:5,text:"My go-to fabric spray now. Ordering second bottle!"},
+    {userName:"Arun Menon",phone:"9876543221",rating:5,text:"Subtle and long-lasting. Perfect combination!"},
+    {userName:"Riya Singh",phone:"9876543222",rating:4,text:"Nice product. Delivery was quick too."},
+    {userName:"Sunil Pandey",phone:"9876543223",rating:5,text:"Best fabric perfume in this price range."},
+    {userName:"Kavya Rao",phone:"9876543224",rating:5,text:"Love it! Using on all my clothes now."},
+    {userName:"Tanvi Iyer",phone:"9876543250",rating:5,text:"Amazing freshness! My wardrobe smells like a luxury hotel."},
+    {userName:"Harsh Gupta",phone:"9876543251",rating:4,text:"Good value. Lasts about 6-7 hours on cotton."},
+    {userName:"Nandini Das",phone:"9876543252",rating:5,text:"Perfect for Indian weather. Not too heavy."},
+    {userName:"Siddharth Roy",phone:"9876543253",rating:5,text:"My wife loves it! Bought 3 bottles."},
+    {userName:"Ishita Chopra",phone:"9876543254",rating:5,text:"Smells expensive! Can't believe the price."},
+    {userName:"Vishal Shetty",phone:"9876543255",rating:4,text:"Decent product. Works well on formal wear."},
+    {userName:"Aditi Kulkarni",phone:"9876543256",rating:5,text:"Gentle on delicate fabrics. Highly recommend!"},
+    {userName:"Mohit Bajaj",phone:"9876543257",rating:5,text:"Best purchase this month. Fresh all day!"},
+    {userName:"Simran Kaur",phone:"9876543258",rating:5,text:"Love the clean cotton smell. Not artificial at all."},
+    {userName:"Rajat Malhotra",phone:"9876543259",rating:4,text:"Good product. Will order again."}
+  ],
+  "White Tea & Woods Fabric Perfume":[
+    {userName:"Divya Lakshmi",phone:"9876543225",rating:5,text:"Absolutely love this! The woody notes are so calming."},
+    {userName:"Arjun Malhotra",phone:"9876543226",rating:5,text:"Premium quality. Worth every rupee."},
+    {userName:"Pooja Khanna",phone:"9876543227",rating:5,text:"Best fabric perfume I've tried."},
+    {userName:"Rohan Saxena",phone:"9876543228",rating:4,text:"Great for evening wear."},
+    {userName:"Kavita Bhatt",phone:"9876543229",rating:5,text:"Elegant fragrance!"},
+    {userName:"Sanjay Thakur",phone:"9876543230",rating:5,text:"My wife loves it! Using it on all our premium fabrics."},
+    {userName:"Nisha Gupta",phone:"9876543231",rating:5,text:"Sophisticated scent. Guests always ask what perfume I use!"},
+    {userName:"Aditya Verma",phone:"9876543232",rating:4,text:"Good product. Slightly expensive but quality justifies it."},
+    {userName:"Megha Pillai",phone:"9876543260",rating:5,text:"Luxurious! Perfect for special occasions."},
+    {userName:"Karan Bhatia",phone:"9876543261",rating:5,text:"The woody notes are amazing. Very calming."},
+    {userName:"Ritika Sharma",phone:"9876543262",rating:5,text:"Best for silk and linen. Smells premium!"},
+    {userName:"Abhishek Jain",phone:"9876543263",rating:4,text:"Nice fragrance. Lasts longer than expected."},
+    {userName:"Pallavi Reddy",phone:"9876543264",rating:5,text:"Love the tea notes! So refreshing."},
+    {userName:"Gaurav Singh",phone:"9876543265",rating:5,text:"Premium quality. Worth the price."},
+    {userName:"Ananya Nair",phone:"9876543266",rating:5,text:"Elegant and sophisticated. My favorite!"},
+    {userName:"Vivek Menon",phone:"9876543267",rating:4,text:"Good for formal wear. Subtle yet noticeable."},
+    {userName:"Shruti Desai",phone:"9876543268",rating:5,text:"Amazing scent! Ordering more bottles."},
+    {userName:"Akash Patel",phone:"9876543269",rating:5,text:"Best fabric perfume I've used. Highly recommend!"},
+    {userName:"Neeta Agarwal",phone:"9876543270",rating:5,text:"Love it! My curtains smell like a spa."},
+    {userName:"Ravi Kumar",phone:"9876543271",rating:4,text:"Nice woody fragrance. Good value."},
+    {userName:"Sonali Mehta",phone:"9876543272",rating:5,text:"Perfect for evening wear. Very elegant."},
+    {userName:"Manish Rao",phone:"9876543273",rating:5,text:"Premium product. Worth every rupee!"},
+    {userName:"Deepika Iyer",phone:"9876543274",rating:5,text:"Sophisticated scent. Love the tea notes."},
+    {userName:"Aryan Khanna",phone:"9876543275",rating:4,text:"Good quality. Will buy again."}
+  ],
+  "Soft Cotton Cloud Fabric Perfume":[
+    {userName:"Ritu Agarwal",phone:"9876543233",rating:5,text:"So gentle! Perfect for baby clothes."},
+    {userName:"Manish Hegde",phone:"9876543234",rating:5,text:"Soft and comforting."},
+    {userName:"Deepa Rao",phone:"9876543235",rating:4,text:"Nice mild fragrance."},
+    {userName:"Suresh Pillai",phone:"9876543236",rating:5,text:"Best for daily use."},
+    {userName:"Lakshmi Nambiar",phone:"9876543237",rating:5,text:"Love how soft it makes my towels smell!"},
+    {userName:"Rajesh Kulkarni",phone:"9876543238",rating:4,text:"Good value for money. Will repurchase."},
+    {userName:"Swati Mishra",phone:"9876543239",rating:5,text:"Gentle on delicate fabrics. Highly satisfied!"},
+    {userName:"Prateek Joshi",phone:"9876543276",rating:5,text:"Perfect for sensitive skin. No irritation at all."},
+    {userName:"Anjali Verma",phone:"9876543277",rating:5,text:"Soft cotton smell. Love it!"},
+    {userName:"Rohit Saxena",phone:"9876543278",rating:4,text:"Good for daily wear. Mild and pleasant."},
+    {userName:"Sneha Reddy",phone:"9876543279",rating:5,text:"Best for baby clothes. Very gentle."},
+    {userName:"Vikram Patel",phone:"9876543280",rating:5,text:"Comforting scent. Perfect for bedsheets."},
+    {userName:"Pooja Singh",phone:"9876543281",rating:5,text:"Love the soft cotton fragrance!"},
+    {userName:"Amit Sharma",phone:"9876543282",rating:4,text:"Nice mild scent. Good for sensitive fabrics."},
+    {userName:"Divya Nair",phone:"9876543283",rating:5,text:"Perfect! Not overpowering at all."},
+    {userName:"Karthik Menon",phone:"9876543284",rating:5,text:"Gentle and long-lasting. Highly recommend!"},
+    {userName:"Meera Gupta",phone:"9876543285",rating:5,text:"Best for towels and bedsheets."},
+    {userName:"Sanjay Kumar",phone:"9876543286",rating:4,text:"Good product. Mild and pleasant."},
+    {userName:"Nisha Iyer",phone:"9876543287",rating:5,text:"Love it! Using on all my clothes."},
+    {userName:"Arun Desai",phone:"9876543288",rating:5,text:"Soft cotton cloud indeed! Perfect name."},
+    {userName:"Kavya Pillai",phone:"9876543289",rating:5,text:"Gentle fragrance. Perfect for daily use."},
+    {userName:"Rahul Bhatia",phone:"9876543290",rating:4,text:"Nice product. Good value for money."},
+    {userName:"Priya Jain",phone:"9876543291",rating:5,text:"Best fabric perfume for sensitive skin!"},
+    {userName:"Vishal Rao",phone:"9876543292",rating:5,text:"Comforting and gentle. Love it!"}
+  ],
+  "Ivory Linen Fabric Perfume":[
+    {userName:"Neha Sinha",phone:"9876543240",rating:5,text:"Elegant floral notes!"},
+    {userName:"Varun Dutta",phone:"9876543241",rating:5,text:"Premium quality."},
+    {userName:"Shreya Banerjee",phone:"9876543242",rating:4,text:"Beautiful scent."},
+    {userName:"Prakash Murthy",phone:"9876543243",rating:5,text:"My formal shirts smell amazing!"},
+    {userName:"Anita Reddy",phone:"9876543244",rating:5,text:"Love the airy floral scent. Not overpowering at all."},
+    {userName:"Gaurav Puri",phone:"9876543245",rating:5,text:"Best for luxury linens. Guests always compliment!"},
+    {userName:"Priyanka Jain",phone:"9876543246",rating:4,text:"Good product. Wish it came in a larger bottle."},
+    {userName:"Siddharth Mehta",phone:"9876543293",rating:5,text:"Elegant and sophisticated. Perfect for formal wear."},
+    {userName:"Tanvi Sharma",phone:"9876543294",rating:5,text:"Love the linen scent! Very refreshing."},
+    {userName:"Harsh Verma",phone:"9876543295",rating:5,text:"Premium quality. Worth every penny."},
+    {userName:"Nandini Gupta",phone:"9876543296",rating:4,text:"Nice floral notes. Good for special occasions."},
+    {userName:"Arjun Iyer",phone:"9876543297",rating:5,text:"Best for linen sarees and formal wear."},
+    {userName:"Ishita Nair",phone:"9876543298",rating:5,text:"Elegant fragrance! My favorite."},
+    {userName:"Mohit Pillai",phone:"9876543299",rating:5,text:"Love the airy floral scent. Very calming."},
+    {userName:"Simran Desai",phone:"9876543300",rating:4,text:"Good product. Lasts long on linen."},
+    {userName:"Rajat Kulkarni",phone:"9876543301",rating:5,text:"Premium quality. Highly recommend!"},
+    {userName:"Aditi Rao",phone:"9876543302",rating:5,text:"Perfect for luxury fabrics. Love it!"},
+    {userName:"Vishal Menon",phone:"9876543303",rating:5,text:"Elegant and refined. Best fabric perfume!"},
+    {userName:"Megha Saxena",phone:"9876543304",rating:4,text:"Nice floral scent. Good for formal wear."},
+    {userName:"Karan Reddy",phone:"9876543305",rating:5,text:"Love it! My shirts smell amazing."},
+    {userName:"Ritika Patel",phone:"9876543306",rating:5,text:"Sophisticated fragrance. Worth the price."},
+    {userName:"Abhishek Singh",phone:"9876543307",rating:5,text:"Best for linen and silk. Highly satisfied!"},
+    {userName:"Pallavi Joshi",phone:"9876543308",rating:4,text:"Good quality. Will order again."},
+    {userName:"Ananya Kumar",phone:"9876543309",rating:5,text:"Elegant floral notes. Perfect for special occasions!"}]
+};
+
+async function addFakeReviews(){
+  btn.disabled=true;
+  log('🚀 Starting to add fake reviews...');
+  
+  let total=0;
+  let success=0;
+  
+  for(const [productName,reviews] of Object.entries(fakeReviews)){
+    log(`\n📦 Adding reviews for ${productName}...`);
+    
+    for(const review of reviews){
+      total++;
+      try{
+        const response=await fetch(`${API_URL}/api/reviews`,{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            productName:productName,
+            userPhone:review.phone,
+            userName:review.userName,
+            rating:review.rating,
+            reviewText:review.text
+          })
+        });
+        
+        const result=await response.json();
+        
+        if(result.success){
+          success++;
+          log(`✓ ${review.userName}`,'success');
+        }else{
+          log(`✗ ${review.userName} - ${result.error}`,'error');
+        }
+        
+        await new Promise(resolve=>setTimeout(resolve,100));
+        
+      }catch(error){
+        log(`✗ ${review.userName} - ${error.message}`,'error');
+      }
+    }
+  }
+  
+  log(`\n✅ Done! Added ${success}/${total} reviews`,'success');
+  btn.disabled=false;
+  btn.textContent='ADD MORE REVIEWS';
+}
+</script>
+</body>
+</html>
